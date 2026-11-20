@@ -384,10 +384,10 @@ button.chip:hover{ border-color:#5a5a60; color:var(--text); }
 .diag .acts{ display:flex; gap:12px; margin-top:8px; flex-wrap:wrap; justify-content:center; }
 
 /* ---------- Abertura (só ao terminar o onboarding) ---------- */
-.intro{ position:fixed; inset:0; z-index:150; background:#000; display:grid; place-items:center; transition:opacity .35s; }
+.intro{ position:fixed; inset:0; z-index:150; background:#000; transition:opacity .35s; }
 .intro[hidden]{ display:none; }
 .intro.is-out{ opacity:0; pointer-events:none; }
-.intro video{ width:100%; height:100%; object-fit:contain; }
+.intro video{ position:absolute; inset:0; width:100%; height:100%; object-fit:contain; object-position:center; }
 .intro-skip{ position:absolute; right:calc(24px + env(safe-area-inset-right,0px)); bottom:calc(24px + env(safe-area-inset-bottom,0px)); padding:8px 14px; border-radius:4px; background:rgba(255,255,255,.08); color:var(--text-2); font-size:13px; font-weight:500; }
 .intro-skip:hover{ background:rgba(255,255,255,.16); color:var(--text); }
 
@@ -1055,7 +1055,7 @@ function renderOnboarding(){
       </div>`;
     foot = `<button class="btn btn-ghost" data-action="ob-back">Voltar</button><button class="btn btn-primary" data-action="ob-next">Continuar</button>`;
   } else if (st === 3){
-    title = 'Qual a sua data de nascimento?'; lead = 'Opcional. Se você informar, a classificação indicativa é ajustada pela sua idade.';
+    title = 'Qual a sua data de nascimento?'; lead = 'A classificação indicativa é ajustada automaticamente pela sua idade.';
     const year = new Date().getFullYear();
     const complete = OB.d && OB.m && OB.y; const r = complete ? ratingFor({d:+OB.d, m:+OB.m, y:+OB.y}) : null;
     body = `<div class="ob-group"><h2>Data de nascimento</h2>
@@ -1065,9 +1065,9 @@ function renderOnboarding(){
         <div class="field"><label for="ob-y">Ano</label><select id="ob-y" data-action="ob-date" data-k="y"><option value="">Selecionar</option>${Array.from({length:90},(_,i)=>year-5-i).map(y=>`<option ${+OB.y===y?'selected':''}>${y}</option>`).join('')}</select></div>
       </div>
       <p class="note">Usamos sua data de nascimento só para ajustar a classificação indicativa. Ela não aparece no seu perfil.</p>
-      <div class="result-box ${r?'ok':''}" aria-live="polite">${r ? `<b>Conteúdo liberado até ${r}</b><small>${r==='A18' ? 'Todo o catálogo fica disponível.' : `Títulos acima de ${r} ficam ocultos neste perfil.`}</small>` : `<b>Sem data informada, todo o catálogo fica disponível</b><small>Preencha dia, mês e ano para ajustar a classificação automaticamente.</small>`}</div>
+      <div class="result-box ${r?'ok':''}" aria-live="polite">${r ? `<b>Conteúdo liberado até ${r}</b><small>${r==='A18' ? 'Todo o catálogo fica disponível.' : `Títulos acima de ${r} ficam ocultos neste perfil.`}</small>` : `<b>Preencha a data para continuar</b><small>A classificação liberada é calculada automaticamente, sem configuração extra.</small>`}</div>
     </div>`;
-    foot = `<button class="btn btn-ghost" data-action="ob-back">Voltar</button><button class="btn btn-primary" data-action="ob-next">Continuar</button>`;
+    foot = `<button class="btn btn-ghost" data-action="ob-back">Voltar</button><button class="btn btn-primary" data-action="ob-next" ${complete?'':'disabled'}>Continuar</button>`;
   } else {
     title = 'Marque alguns títulos que você curte'; lead = sel ? 'Opcional. Selecionamos com base no que você escolheu.' : 'Opcional. Estes são os títulos mais populares agora.';
     const prefs = {genres:[...OB.genres], themes:[...OB.themes], studios:[...OB.studios]};
@@ -1105,9 +1105,9 @@ function playIntro(done){
   const end = () => {
     if (finished) return; finished = true; clearTimeout(safety);
     box.classList.add('is-out');
-    setTimeout(() => { box.hidden = true; box.classList.remove('is-out'); v.pause(); v.removeAttribute('src'); v.load(); done(); }, 350);
+    setTimeout(() => { box.hidden = true; box.classList.remove('is-out'); document.documentElement.style.overflow = ''; v.pause(); v.removeAttribute('src'); v.load(); done(); }, 350);
   };
-  box.hidden = false; box.classList.remove('is-out');
+  box.hidden = false; box.classList.remove('is-out'); document.documentElement.style.overflow = 'hidden';
   v.onended = end; v.onerror = end; box.endIntro = end;
   v.onloadedmetadata = () => { if (v.duration > INTRO_MAX) v.playbackRate = Math.min(4, v.duration / INTRO_MAX); };
   v.muted = false; v.src = INTRO_SRC;
