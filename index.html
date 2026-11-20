@@ -1084,7 +1084,8 @@ function finishOnboarding(){
 /* =========================================================
    Player
    ========================================================= */
-const P = { id:null, s:1, e:1, t:0, playing:false, rate:1, muted:false, buffering:false, skip:null, skipTimer:null, introDone:false, outroShown:false, tick:null, lastSave:0, idle:null, subI:0, dragging:false };
+const P = { id:null, s:1, e:1, t:0, playing:false, rate:1, muted:false, buffering:false, skip:null, skipTimer:null, introDone:false, outroShown:false, tick:null, lastSave:0, idle:null, subI:0, dragging:false, bufStart:0, buf:0, slow:false };
+const LOAD_PER_TICK = 2, BUF_AHEAD = 300; /* carrega 8s de vídeo por segundo, até 5 min à frente */
 const pl = $('#player');
 function startEpisode(id, s, e, fromStart){
   const pr = S.prog[id];
@@ -1110,6 +1111,7 @@ function openPlayer(){
   $('#speed-lbl').textContent = `${P.rate}x`;
   $('#pc-next').hidden = !nextEp();
   clearSkip(); closePop(); $('#buffer-slot').innerHTML = '';
+  P.bufStart = P.buf = P.t; P.slow = false;
   P.buffering = true; renderBuffer(false);
   setPlaying(false); updateUI();
   clearTimeout(P.loadT); P.loadT = setTimeout(() => { P.buffering = false; $('#buffer-slot').innerHTML = ''; setPlaying(true); }, 900);
@@ -1127,6 +1129,7 @@ function nextEp(){ const t = byId[P.id]; if (t.type === 'Filme') return null; co
 function setPlaying(v){ P.playing = v; pl.classList.toggle('is-paused', !v); const b = $('#pc-play'); b.innerHTML = v ? IC.pause : IC.play; b.setAttribute('aria-label', v ? 'Pausar' : 'Reproduzir'); if (v) wake(); }
 function tick(){
   if (pl.hidden) return;
+  if (!P.slow) P.buf = Math.max(P.buf, Math.min(EP_LEN, P.buf + LOAD_PER_TICK, P.t + BUF_AHEAD));
   if (P.playing && !P.buffering && !P.dragging){
     P.t = Math.min(EP_LEN, P.t + 0.25 * P.rate);
     if (Date.now() - P.lastSave > 3000) saveProgress();
@@ -1162,6 +1165,16 @@ function skipTick(){
   if (P.skipLeft <= 0){ P.skipLeft = null; doSkip(true); }
 }
 function clearSkip(){ P.skipLeft = null; P.skip = null; $('#skip-slot').innerHTML = ''; }
+/* Preferências mudadas no meio do episódio valem na hora: refaz o botão de pular que estiver na tela */
+function applyPlaybackPref(k){
+  const on = S.prefs[k];
+  if (!pl.hidden){
+    if (k === 'autoSkip' && P.skip === 'intro') showSkip('intro', on);
+    if (k === 'autoplay' && P.skip === 'outro') showSkip('outro', on);
+  }
+  if (k === 'autoSkip') toast(on ? 'Pular abertura automaticamente: ativado' : 'Pular abertura automaticamente: desativado');
+  if (k === 'autoplay') toast(on ? 'Próximo episódio automaticamente: ativado' : 'Próximo episódio automaticamente: desativado');
+}
 function doSkip(auto){
   if (P.skip === 'intro'){
     const back = P.t; clearSkip(); P.introDone = true; P.t = INTRO[1];
@@ -1181,7 +1194,8 @@ function saveProgress(final){
 function updateUI(){
   const pct = P.t / EP_LEN * 100;
   $('#tl-fill').style.width = pct + '%'; $('#tl-knob').style.left = pct + '%';
-  $('#tl-buf').style.width = Math.min(100, (P.t + (P.buffering ? 2 : 75)) / EP_LEN * 100) + '%';
+  $('#tl-buf').style.left = (P.bufStart / EP_LEN * 100) + '%';
+  $('#tl-buf').style.width = Math.max(0, (P.buf - P.bufStart) / EP_LEN * 100) + '%';
   $('#p-time').textContent = `${fmt(P.t)} / ${fmt(EP_LEN)}`;
   const tl = $('#timeline'); tl.setAttribute('aria-valuenow', Math.floor(P.t)); tl.setAttribute('aria-valuetext', `${fmt(P.t)} de ${fmt(EP_LEN)}`);
   const lines = SUBS[S.prefs.sub] || (S.prefs.sub === 'Sem legenda' ? null : SUBS['Português (Brasil)']);
@@ -1189,7 +1203,9 @@ function updateUI(){
   $('#subs').textContent = (lines && !inSeg && P.t > 3) ? lines[P.subI % lines.length] : '';
   $('#pc-mute').innerHTML = P.muted ? IC.mute : IC.vol; $('#pc-mute').setAttribute('aria-label', P.muted ? 'Ativar som' : 'Silenciar');
 }
-function seek(to){ P.t = Math.max(0, Math.min(EP_LEN - 1, to)); if (P.t < INTRO[0]) P.introDone = false; if (P.t < OUTRO) P.outroShown = false; segments(); updateUI(); }
+/* Pular para um trecho que ainda não carregou: recomeça o carregamento dali, com um carregamento curto */
+function briefBuffer(){ if (P.buffering) return; P.buffering = true; renderBuffer(false); clearTimeout(P.loadT); P.loadT = setTimeout(() => { P.buffering = false; $('#buffer-slot').innerHTML = ''; }, 700); }
+function seek(to){ P.t = Math.max(0, Math.min(EP_LEN - 1, to)); if (P.t < P.bufStart || P.t > P.buf){ P.bufStart = P.buf = P.t; if (!P.dragging) briefBuffer(); } if (P.t < INTRO[0]) P.introDone = false; if (P.t < OUTRO) P.outroShown = false; segments(); updateUI(); }
 function renderBuffer(diag){
   const slot = $('#buffer-slot');
   if (!diag){ slot.innerHTML = `<div class="buffer" role="status" aria-label="Carregando"><div class="spinner"></div></div>`; return; }
@@ -1202,7 +1218,7 @@ function renderBuffer(diag){
   </div></div>`;
   $('[data-action="buf-480"]', slot).focus();
 }
-function simulateSlow(){ closePop(); P.buffering = true; renderBuffer(false); clearTimeout(P.loadT); P.loadT = setTimeout(() => renderBuffer(true), 2200); }
+function simulateSlow(){ closePop(); P.slow = true; P.buffering = true; renderBuffer(false); clearTimeout(P.loadT); P.loadT = setTimeout(() => renderBuffer(true), 2200); }
 function closePop(){ const p = $('#p-pop'); p.hidden = true; p.innerHTML = ''; }
 function openPop(kind){
   const p = $('#p-pop');
@@ -1241,7 +1257,7 @@ function toggleFs(){ if (document.fullscreenElement) document.exitFullscreen?.()
   const at = x => { const r = tl.getBoundingClientRect(); return Math.max(0, Math.min(1, (x - r.left) / r.width)) * EP_LEN; };
   tl.addEventListener('pointermove', e => { const r = tl.getBoundingClientRect(); const v = at(e.clientX); tip.textContent = fmt(v) + (v>=INTRO[0]&&v<INTRO[1] ? ' · Abertura' : v>=OUTRO ? ' · Encerramento' : ''); tip.style.left = (e.clientX - r.left) + 'px'; if (P.dragging) seek(v); });
   tl.addEventListener('pointerdown', e => { P.dragging = true; tl.classList.add('dragging'); tl.setPointerCapture(e.pointerId); seek(at(e.clientX)); });
-  const end = () => { P.dragging = false; tl.classList.remove('dragging'); };
+  const end = () => { P.dragging = false; tl.classList.remove('dragging'); if (P.buf - P.t < 1) briefBuffer(); };
   tl.addEventListener('pointerup', end); tl.addEventListener('pointercancel', end);
 })();
 $('#vol').addEventListener('input', e => { P.muted = +e.target.value === 0; updateUI(); });
@@ -1306,7 +1322,7 @@ document.addEventListener('click', e => {
     case 'f-remove': SR.f[d.k] = SR.f[d.k].filter(o => o !== d.o); renderFilters(); renderResults(); break;
     case 'f-clear': Object.keys(SR.f).forEach(k => SR.f[k] = []); renderFilters(); renderResults(); break;
     case 'toggle-account': toggleAccount(); break;
-    case 'pref-switch': { const k = d.k; S.prefs[k] = !S.prefs[k]; save(); el.setAttribute('aria-checked', S.prefs[k]); $$(`[data-action="pref-switch"][data-k="${k}"]`).forEach(b => b.setAttribute('aria-checked', S.prefs[k])); break; }
+    case 'pref-switch': { const k = d.k; S.prefs[k] = !S.prefs[k]; save(); el.setAttribute('aria-checked', S.prefs[k]); $$(`[data-action="pref-switch"][data-k="${k}"]`).forEach(b => b.setAttribute('aria-checked', S.prefs[k])); applyPlaybackPref(k); break; }
     case 'logout': try{ localStorage.removeItem(KEY); }catch(_){} S = defaults(); Object.assign(OB, { step:1, genres:new Set(), themes:new Set(), studios:new Set(), sub:'Português (Brasil)', dub:'Áudio original (JP)', autoSkip:true, autoplay:true, d:'', m:'', y:'', picks:new Set() }); go('#boas-vindas'); break;
     case 'ob-bubble': { const set = OB[d.k]; set.has(d.v) ? set.delete(d.v) : set.add(d.v); el.setAttribute('aria-pressed', set.has(d.v)); const n = OB.genres.size + OB.themes.size + OB.studios.size; $('.ob-foot .count').textContent = `${n} selecionado${n===1?'':'s'}${n<3?` · faltam ${3-n}`:''}`; $('[data-action="ob-next"]').disabled = n < 3; break; }
     case 'ob-skipstep': obGo(OB.step + 1); break;
@@ -1331,8 +1347,8 @@ document.addEventListener('click', e => {
     case 'demo-intro': closePop(); seek(INTRO[0] - 3); P.introDone = false; setPlaying(true); break;
     case 'demo-outro': closePop(); seek(OUTRO - 3); setPlaying(true); break;
     case 'demo-slow': simulateSlow(); break;
-    case 'buf-480': S.prefs.quality = '480p'; save(); P.buffering = false; $('#buffer-slot').innerHTML = ''; setPlaying(true); toast('Qualidade alterada para 480p'); break;
-    case 'buf-wait': $('#buffer-slot').innerHTML = ''; renderBuffer(false); clearTimeout(P.loadT); P.loadT = setTimeout(() => { P.buffering = false; $('#buffer-slot').innerHTML = ''; setPlaying(true); }, 2500); break;
+    case 'buf-480': S.prefs.quality = '480p'; save(); P.slow = false; P.buffering = false; $('#buffer-slot').innerHTML = ''; setPlaying(true); toast('Qualidade alterada para 480p'); break;
+    case 'buf-wait': $('#buffer-slot').innerHTML = ''; renderBuffer(false); clearTimeout(P.loadT); P.loadT = setTimeout(() => { P.slow = false; P.buffering = false; $('#buffer-slot').innerHTML = ''; setPlaying(true); }, 2500); break;
   }
 });
 document.addEventListener('change', e => {
