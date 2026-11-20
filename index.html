@@ -1027,10 +1027,10 @@ function renderOnboarding(){
   let body = '', title = '', lead = '', foot = '';
   const sel = OB.genres.size + OB.themes.size + OB.studios.size;
   if (st === 1){
-    title = 'O que você curte?'; lead = 'Escolha pelo menos 3. Isso ajusta suas recomendações desde o primeiro acesso.';
+    title = 'O que você curte?'; lead = 'Escolha quantos quiser, ou nenhum. O que você marcar ajusta suas recomendações desde o primeiro acesso.';
     const grp = (h, arr, set, k) => `<div class="ob-group"><h2>${h}</h2><div class="bubbles">${arr.map(x => `<button class="bubble" data-action="ob-bubble" data-k="${k}" data-v="${esc(x)}" aria-pressed="${set.has(x)}">${esc(x)}</button>`).join('')}</div></div>`;
     body = grp('Gêneros', GENRES, OB.genres, 'genres') + grp('Temas', THEMES, OB.themes, 'themes') + grp('Estúdios', STUDIOS, OB.studios, 'studios');
-    foot = `<span class="count" aria-live="polite">${sel} selecionado${sel===1?'':'s'}${sel<3?` · faltam ${3-sel}`:''}</span><button class="btn btn-ghost" data-action="ob-skipstep">Pular essa etapa</button><button class="btn btn-primary" data-action="ob-next" ${sel<3?'disabled':''}>Continuar</button>`;
+    foot = `<span class="count" aria-live="polite">${sel} selecionado${sel===1?'':'s'}</span><button class="btn btn-ghost" data-action="ob-skipstep">Pular essa etapa</button><button class="btn btn-primary" data-action="ob-next">Continuar</button>`;
   } else if (st === 2){
     title = 'Como você prefere assistir?'; lead = 'Defina o idioma padrão. Dá pra trocar em qualquer episódio.';
     const radios = (name, arr, val) => `<fieldset class="radios"><legend class="vh">${name}</legend>${arr.map(x => `<label class="radio"><input type="radio" name="${name}" value="${esc(x)}" ${val===x?'checked':''} data-action="ob-radio">${esc(x)}</label>`).join('')}</fieldset>`;
@@ -1042,7 +1042,7 @@ function renderOnboarding(){
       </div>`;
     foot = `<button class="btn btn-ghost" data-action="ob-back">Voltar</button><button class="btn btn-primary" data-action="ob-next">Continuar</button>`;
   } else if (st === 3){
-    title = 'Qual a sua data de nascimento?'; lead = 'A classificação indicativa é ajustada automaticamente pela sua idade.';
+    title = 'Qual a sua data de nascimento?'; lead = 'Opcional. Se você informar, a classificação indicativa é ajustada pela sua idade.';
     const year = new Date().getFullYear();
     const complete = OB.d && OB.m && OB.y; const r = complete ? ratingFor({d:+OB.d, m:+OB.m, y:+OB.y}) : null;
     body = `<div class="ob-group"><h2>Data de nascimento</h2>
@@ -1052,11 +1052,11 @@ function renderOnboarding(){
         <div class="field"><label for="ob-y">Ano</label><select id="ob-y" data-action="ob-date" data-k="y"><option value="">Selecionar</option>${Array.from({length:90},(_,i)=>year-5-i).map(y=>`<option ${+OB.y===y?'selected':''}>${y}</option>`).join('')}</select></div>
       </div>
       <p class="note">Usamos sua data de nascimento só para ajustar a classificação indicativa. Ela não aparece no seu perfil.</p>
-      <div class="result-box ${r?'ok':''}" aria-live="polite">${r ? `<b>Conteúdo liberado até ${r}</b><small>${r==='A18' ? 'Todo o catálogo fica disponível.' : `Títulos acima de ${r} ficam ocultos neste perfil.`}</small>` : `<b>Preencha a data para ver a classificação liberada</b><small>Ela é calculada automaticamente, sem configuração extra.</small>`}</div>
+      <div class="result-box ${r?'ok':''}" aria-live="polite">${r ? `<b>Conteúdo liberado até ${r}</b><small>${r==='A18' ? 'Todo o catálogo fica disponível.' : `Títulos acima de ${r} ficam ocultos neste perfil.`}</small>` : `<b>Sem data informada, todo o catálogo fica disponível</b><small>Preencha dia, mês e ano para ajustar a classificação automaticamente.</small>`}</div>
     </div>`;
-    foot = `<button class="btn btn-ghost" data-action="ob-back">Voltar</button><button class="btn btn-primary" data-action="ob-next" ${complete?'':'disabled'}>Continuar</button>`;
+    foot = `<button class="btn btn-ghost" data-action="ob-back">Voltar</button><button class="btn btn-primary" data-action="ob-next">Continuar</button>`;
   } else {
-    title = 'Marque alguns títulos que você curte'; lead = 'Selecionamos com base nos gêneros e estúdios que você escolheu.';
+    title = 'Marque alguns títulos que você curte'; lead = sel ? 'Opcional. Selecionamos com base no que você escolheu.' : 'Opcional. Estes são os títulos mais populares agora.';
     const prefs = {genres:[...OB.genres], themes:[...OB.themes], studios:[...OB.studios]};
     const max = OB.y ? ratingFor({d:+OB.d||1, m:+OB.m||1, y:+OB.y}) : 'A18';
     const list = T.filter(t => RATINGS.indexOf(t.r) <= RATINGS.indexOf(max) && t.type === 'Série').sort((a,b) => score(b, prefs, []) - score(a, prefs, [])).slice(0,12);
@@ -1073,12 +1073,12 @@ function renderOnboarding(){
 }
 function obGo(step){ OB.step = step; withTransition(() => { renderOnboarding(); window.scrollTo(0,0); $('h1', app)?.focus({preventScroll:true}); }); }
 function finishOnboarding(){
-  S.prefs = { ...S.prefs, genres:[...OB.genres], themes:[...OB.themes], studios:[...OB.studios], sub:OB.sub, dub:OB.dub, autoSkip:OB.autoSkip, autoplay:OB.autoplay, birth:{d:+OB.d, m:+OB.m, y:+OB.y} };
+  S.prefs = { ...S.prefs, genres:[...OB.genres], themes:[...OB.themes], studios:[...OB.studios], sub:OB.sub, dub:OB.dub, autoSkip:OB.autoSkip, autoplay:OB.autoplay, birth:(OB.d && OB.m && OB.y) ? {d:+OB.d, m:+OB.m, y:+OB.y} : null };
   S.prefs.max = ratingFor(S.prefs.birth); S.picks = [...OB.picks];
   S.onboarded = true; save();
   go('#inicio');
   const n = OB.genres.size + OB.themes.size + OB.studios.size + OB.picks.size;
-  setTimeout(() => toast(`Pronto! Suas recomendações foram ajustadas com ${n} escolhas.`), 400);
+  setTimeout(() => toast(n ? `Pronto! Suas recomendações foram ajustadas com ${n} escolha${n===1?'':'s'}.` : 'Pronto! Começamos pelos títulos mais populares.'), 400);
 }
 
 /* =========================================================
@@ -1324,7 +1324,7 @@ document.addEventListener('click', e => {
     case 'toggle-account': toggleAccount(); break;
     case 'pref-switch': { const k = d.k; S.prefs[k] = !S.prefs[k]; save(); el.setAttribute('aria-checked', S.prefs[k]); $$(`[data-action="pref-switch"][data-k="${k}"]`).forEach(b => b.setAttribute('aria-checked', S.prefs[k])); applyPlaybackPref(k); break; }
     case 'logout': try{ localStorage.removeItem(KEY); }catch(_){} S = defaults(); Object.assign(OB, { step:1, genres:new Set(), themes:new Set(), studios:new Set(), sub:'Português (Brasil)', dub:'Áudio original (JP)', autoSkip:true, autoplay:true, d:'', m:'', y:'', picks:new Set() }); go('#boas-vindas'); break;
-    case 'ob-bubble': { const set = OB[d.k]; set.has(d.v) ? set.delete(d.v) : set.add(d.v); el.setAttribute('aria-pressed', set.has(d.v)); const n = OB.genres.size + OB.themes.size + OB.studios.size; $('.ob-foot .count').textContent = `${n} selecionado${n===1?'':'s'}${n<3?` · faltam ${3-n}`:''}`; $('[data-action="ob-next"]').disabled = n < 3; break; }
+    case 'ob-bubble': { const set = OB[d.k]; set.has(d.v) ? set.delete(d.v) : set.add(d.v); el.setAttribute('aria-pressed', set.has(d.v)); const n = OB.genres.size + OB.themes.size + OB.studios.size; $('.ob-foot .count').textContent = `${n} selecionado${n===1?'':'s'}`; break; }
     case 'ob-skipstep': obGo(OB.step + 1); break;
     case 'ob-next': if (!el.disabled) obGo(OB.step + 1); break;
     case 'ob-back': obGo(OB.step - 1); break;
