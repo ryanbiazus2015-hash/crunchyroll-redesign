@@ -387,7 +387,8 @@ button.chip:hover{ border-color:#5a5a60; color:var(--text); }
 .intro{ position:fixed; inset:0; z-index:150; background:#000; transition:opacity .35s; }
 .intro[hidden]{ display:none; }
 .intro.is-out{ opacity:0; pointer-events:none; }
-.intro video{ position:absolute; inset:0; width:100%; height:100%; object-fit:contain; object-position:center; }
+/* Levemente acima do centro (centro óptico): com as barras do navegador, o centro exato parece baixo */
+.intro video{ position:absolute; inset:0; width:100%; height:100%; object-fit:contain; object-position:center; translate:0 -7vh; }
 .intro-skip{ position:absolute; right:calc(24px + env(safe-area-inset-right,0px)); bottom:calc(24px + env(safe-area-inset-bottom,0px)); padding:8px 14px; border-radius:4px; background:rgba(255,255,255,.08); color:var(--text-2); font-size:13px; font-weight:500; }
 .intro-skip:hover{ background:rgba(255,255,255,.16); color:var(--text); }
 
@@ -565,7 +566,7 @@ const SUBS = {
    Estado persistente (localStorage)
    ========================================================= */
 const KEY = 'cr-redesign-prototipo-v2';
-const defaults = () => ({ onboarded:false, prefs:{ genres:[], themes:[], studios:[], sub:'Português (Brasil)', dub:'Áudio original (JP)', autoSkip:true, autoplay:true, birth:null, max:'A18', quality:'Auto', speed:1 }, picks:[], list:[], prog:{}, recent:[] });
+const defaults = () => ({ onboarded:false, prefs:{ genres:[], themes:[], studios:[], sub:'Português (Brasil)', dub:'Áudio original (JP)', autoSkip:false, autoplay:false, birth:null, max:'A18', quality:'Auto', speed:1 }, picks:[], list:[], prog:{}, recent:[] });
 let S = load();
 function load(){ try{ const raw = localStorage.getItem(KEY); if (raw){ const p = JSON.parse(raw); const d = defaults(); return { ...d, ...p, prefs:{ ...d.prefs, ...(p.prefs||{}) } }; } }catch(e){} return defaults(); }
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
@@ -1032,7 +1033,7 @@ function renderResults(){
 /* =========================================================
    Onboarding
    ========================================================= */
-const OB = { step:1, genres:new Set(), themes:new Set(), studios:new Set(), sub:'Português (Brasil)', dub:'Áudio original (JP)', autoSkip:true, autoplay:true, d:'', m:'', y:'', picks:new Set() };
+const OB = { step:1, genres:new Set(), themes:new Set(), studios:new Set(), sub:'Português (Brasil)', dub:'Áudio original (JP)', autoSkip:false, autoplay:false, d:'', m:'', y:'', picks:new Set() };
 function renderOnboarding(){
   document.body.dataset.view = 'onboarding';
   const st = OB.step;
@@ -1357,7 +1358,7 @@ document.addEventListener('click', e => {
     case 'f-clear': Object.keys(SR.f).forEach(k => SR.f[k] = []); renderFilters(); renderResults(); break;
     case 'toggle-account': toggleAccount(); break;
     case 'pref-switch': { const k = d.k; S.prefs[k] = !S.prefs[k]; save(); el.setAttribute('aria-checked', S.prefs[k]); $$(`[data-action="pref-switch"][data-k="${k}"]`).forEach(b => b.setAttribute('aria-checked', S.prefs[k])); applyPlaybackPref(k); break; }
-    case 'logout': try{ localStorage.removeItem(KEY); }catch(_){} S = defaults(); Object.assign(OB, { step:1, genres:new Set(), themes:new Set(), studios:new Set(), sub:'Português (Brasil)', dub:'Áudio original (JP)', autoSkip:true, autoplay:true, d:'', m:'', y:'', picks:new Set() }); go('#boas-vindas'); break;
+    case 'logout': try{ localStorage.removeItem(KEY); }catch(_){} S = defaults(); Object.assign(OB, { step:1, genres:new Set(), themes:new Set(), studios:new Set(), sub:'Português (Brasil)', dub:'Áudio original (JP)', autoSkip:false, autoplay:false, d:'', m:'', y:'', picks:new Set() }); go('#boas-vindas'); break;
     case 'ob-bubble': { const set = OB[d.k]; set.has(d.v) ? set.delete(d.v) : set.add(d.v); el.setAttribute('aria-pressed', set.has(d.v)); const n = OB.genres.size + OB.themes.size + OB.studios.size; $('.ob-foot .count').textContent = `${n} selecionado${n===1?'':'s'}`; break; }
     case 'ob-skipstep': obGo(OB.step + 1); break;
     case 'ob-next': if (!el.disabled) obGo(OB.step + 1); break;
