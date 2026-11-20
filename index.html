@@ -141,6 +141,15 @@ main{ outline:none; }
 .art.has-img::after{ display:none; }
 .stage-img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
 .stage.has-img .blob{ display:none; }
+/* Destaque sem arte horizontal (key-*.jpg): a capa vertical vira fundo desfocado e aparece nítida à direita */
+.art-key.is-fallback .art-img{ filter:blur(40px) saturate(1.25) brightness(.6); scale:1.25; }
+.hero-poster{ display:none; position:absolute; z-index:2; right:calc(var(--pad) + 2vw); top:50%; translate:0 -50%; width:clamp(180px, 18vw, 260px); border-radius:var(--radius); box-shadow:0 24px 60px rgba(0,0,0,.6); }
+.hero-poster .art{ outline:2px solid transparent; outline-offset:-2px; transition:outline-color .15s; }
+a.hero-poster:hover .art{ outline-color:var(--orange); }
+.hero-slide:has(.art-key.is-fallback.has-img) .hero-poster, .tp-hero:has(.art-key.is-fallback.has-img) .hero-poster{ display:block; }
+.tp-hero .hero-poster{ top:auto; bottom:56px; translate:none; }
+.hero-title-link{ color:inherit; text-decoration:none; text-decoration-thickness:3px; text-underline-offset:6px; text-decoration-color:var(--orange); }
+.hero-title-link:hover{ text-decoration-line:underline; }
 
 /* ---------- Episode tile (Continuar assistindo / episódios) ---------- */
 .ept{ position:relative; min-width:0; }
@@ -415,6 +424,7 @@ button.chip:hover{ border-color:#5a5a60; color:var(--text); }
   .hero-info{ bottom:72px; }
   .hero-ctrl{ bottom:28px; }
   .menu{ width:min(320px, calc(100vw - 32px)); }
+  .hero-slide .hero-poster, .tp-hero .hero-poster{ display:none !important; }
 }
 </style>
 </head>
@@ -587,7 +597,7 @@ const IC = {
 /* Imagens: o HTML procura os arquivos na pasta "imagens/" ao lado dele.
    Se um arquivo não existir, tenta o próximo da lista e, no fim, mantém o placeholder de cor. */
 const IMG_DIR = 'imagens/';
-function artFb(img){ const fb = (img.dataset.fb || '').split('|').filter(Boolean); if (fb.length){ img.dataset.fb = fb.slice(1).join('|'); img.src = fb[0]; } else img.remove(); }
+function artFb(img){ const fb = (img.dataset.fb || '').split('|').filter(Boolean); if (fb.length){ img.dataset.fb = fb.slice(1).join('|'); img.parentNode.classList.add('is-fallback'); img.src = fb[0]; } else img.remove(); }
 function imgTag(srcs){ if (!srcs.length) return ''; return `<img class="art-img" src="${IMG_DIR}${srcs[0]}" data-fb="${srcs.slice(1).map(x => IMG_DIR + x).join('|')}" alt="" loading="lazy" decoding="async" onload="this.parentNode.classList.add('has-img')" onerror="artFb(this)">`; }
 function art(t, kind='poster', extra='', srcs){
   const list = srcs || (kind === 'poster' ? [`poster-${t.id}.jpg`] : kind === 'key' ? [`key-${t.id}.jpg`, `poster-${t.id}.jpg`] : []);
@@ -755,9 +765,10 @@ function heroSlide({t,p}, i, n){
   const saved = S.list.includes(t.id);
   return `<div class="hero-slide ${i===0?'is-active':''}" role="group" aria-roledescription="destaque" aria-label="${i+1} de ${n}" ${i?'inert':''}>
     ${art(t,'key')}<div class="hero-shade"></div>
+    <a class="hero-poster" href="#titulo-${t.id}" tabindex="-1" aria-hidden="true">${art(t)}</a>
     <div class="hero-info">
       <span><span class="badge">${t.r}</span></span>
-      ${i===0 ? `<h1 tabindex="-1">${esc(t.t)}</h1>` : `<h2 class="h1like" style="margin:0;font-size:clamp(34px,5vw,56px);line-height:1;letter-spacing:-.03em;color:#fff;font-weight:800">${esc(t.t)}</h2>`}
+      ${i===0 ? `<h1 tabindex="-1"><a class="hero-title-link" href="#titulo-${t.id}">${esc(t.t)}</a></h1>` : `<h2 class="h1like" style="margin:0;font-size:clamp(34px,5vw,56px);line-height:1;letter-spacing:-.03em;color:#fff;font-weight:800"><a class="hero-title-link" href="#titulo-${t.id}">${esc(t.t)}</a></h2>`}
       <p class="hero-meta">${meta(t)} · ${esc(t.g.join(', '))}</p>
       <p class="hero-syn">${esc(t.syn)}</p>
       ${resume}
@@ -793,7 +804,7 @@ function renderTitle(id){
   const shown = Math.min(count, 24);
   const eps = Array.from({length: shown}, (_,i) => i+1);
   app.innerHTML = `
-    <section class="tp-hero">${art(t,'key')}<div class="hero-shade"></div>
+    <section class="tp-hero">${art(t,'key')}<div class="hero-shade"></div><div class="hero-poster" aria-hidden="true">${art(t)}</div>
       <div class="tp-info">
         <span><span class="badge">${t.r}</span></span>
         <h1 tabindex="-1">${esc(t.t)}</h1>
