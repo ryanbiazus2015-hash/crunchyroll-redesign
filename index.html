@@ -383,6 +383,14 @@ button.chip:hover{ border-color:#5a5a60; color:var(--text); }
 .diag .meter b.low{ color:#ff6b5b; }
 .diag .acts{ display:flex; gap:12px; margin-top:8px; flex-wrap:wrap; justify-content:center; }
 
+/* ---------- Abertura (só ao terminar o onboarding) ---------- */
+.intro{ position:fixed; inset:0; z-index:150; background:#000; display:grid; place-items:center; transition:opacity .35s; }
+.intro[hidden]{ display:none; }
+.intro.is-out{ opacity:0; pointer-events:none; }
+.intro video{ width:100%; height:100%; object-fit:contain; }
+.intro-skip{ position:absolute; right:calc(24px + env(safe-area-inset-right,0px)); bottom:calc(24px + env(safe-area-inset-bottom,0px)); padding:8px 14px; border-radius:4px; background:rgba(255,255,255,.08); color:var(--text-2); font-size:13px; font-weight:500; }
+.intro-skip:hover{ background:rgba(255,255,255,.16); color:var(--text); }
+
 /* ---------- Toast ---------- */
 .toasts{ position:fixed; left:50%; bottom:calc(28px + env(safe-area-inset-bottom,0px)); translate:-50% 0; z-index:120; display:flex; flex-direction:column; gap:8px; align-items:center; pointer-events:none; }
 .toast{ pointer-events:auto; display:flex; align-items:center; gap:16px; background:#f2f2f2; color:#111; padding:12px 16px; border-radius:6px; font-size:14px; font-weight:500; box-shadow:0 10px 30px rgba(0,0,0,.4); }
@@ -474,6 +482,11 @@ button.chip:hover{ border-color:#5a5a60; color:var(--text); }
   </div>
   <div class="p-pop" id="p-pop" hidden></div>
   <div id="buffer-slot"></div>
+</div>
+
+<div class="intro" id="intro" hidden aria-label="Abertura da Crunchyroll">
+  <video id="intro-video" playsinline preload="none"></video>
+  <button class="intro-skip" data-action="intro-skip">Pular</button>
 </div>
 
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
@@ -1078,7 +1091,28 @@ function finishOnboarding(){
   S.onboarded = true; save();
   go('#inicio');
   const n = OB.genres.size + OB.themes.size + OB.studios.size + OB.picks.size;
-  setTimeout(() => toast(n ? `Pronto! Suas recomendações foram ajustadas com ${n} escolha${n===1?'':'s'}.` : 'Pronto! Começamos pelos títulos mais populares.'), 400);
+  playIntro(() => toast(n ? `Pronto! Suas recomendações foram ajustadas com ${n} escolha${n===1?'':'s'}.` : 'Pronto! Começamos pelos títulos mais populares.'));
+}
+
+/* Abertura rápida da Crunchyroll: toca por cima da home recém-montada e some sozinha.
+   Vídeos longos são acelerados para durar no máximo INTRO_MAX segundos. */
+const INTRO_SRC = 'abertura/' + encodeURIComponent('Crunchyroll - Intro (2024) - Polarsan (1080p, h264).mp4');
+const INTRO_MAX = 3;
+function playIntro(done){
+  const box = $('#intro'), v = $('#intro-video');
+  if (reduceMotion()) { done(); return; }
+  let finished = false, safety = null;
+  const end = () => {
+    if (finished) return; finished = true; clearTimeout(safety);
+    box.classList.add('is-out');
+    setTimeout(() => { box.hidden = true; box.classList.remove('is-out'); v.pause(); v.removeAttribute('src'); v.load(); done(); }, 350);
+  };
+  box.hidden = false; box.classList.remove('is-out');
+  v.onended = end; v.onerror = end; box.endIntro = end;
+  v.onloadedmetadata = () => { if (v.duration > INTRO_MAX) v.playbackRate = Math.min(4, v.duration / INTRO_MAX); };
+  v.muted = false; v.src = INTRO_SRC;
+  v.play().catch(() => { v.muted = true; v.play().catch(end); });
+  safety = setTimeout(end, (INTRO_MAX + 3) * 1000);
 }
 
 /* =========================================================
@@ -1332,6 +1366,7 @@ document.addEventListener('click', e => {
     case 'ob-radio': OB[el.name] = el.value; break;
     case 'ob-pick': OB.picks.has(d.id) ? OB.picks.delete(d.id) : OB.picks.add(d.id); el.setAttribute('aria-pressed', OB.picks.has(d.id)); $('.ob-foot .count').textContent = `${OB.picks.size} selecionado${OB.picks.size===1?'':'s'}`; break;
     case 'ob-finish': finishOnboarding(); break;
+    case 'intro-skip': $('#intro').endIntro?.(); break;
     /* player */
     case 'player-back': go(`#titulo-${P.id}`); break;
     case 'toggle-play': setPlaying(!P.playing); break;
