@@ -1,0 +1,1355 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Crunchyroll · Protótipo do redesign</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700;9..40,800&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: dark;
+  --bg:#0A0A0D; --surface:#17171A; --surface-2:#242426; --surface-3:#2E2E31;
+  --border:#404045; --text:#FFFFFF; --text-2:#E0E0E0; --muted:#9A9A9F;
+  --orange:#F47521; --orange-2:#FF9145; --on-orange:#0A0A0D;
+  --radius:4px; --pad:48px;
+  --font:"DM Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --bg:#0A0A0D; --surface:#17171A; --text:#FFFFFF; }
+}
+:root[data-theme="dark"]{ --bg:#0A0A0D; }
+html{ scroll-padding-top:env(safe-area-inset-top,0px); background:var(--bg); }
+*,*::before,*::after{ box-sizing:inherit; }
+[hidden]{ display:none !important; }
+h1[tabindex="-1"]:focus{ outline:none; }
+input[type="search"]::-webkit-search-cancel-button{ -webkit-appearance:none; appearance:none; }
+body{ margin:0; background:var(--bg); color:var(--text-2); font-family:var(--font); font-size:15px; line-height:1.45; -webkit-font-smoothing:antialiased; }
+img{ max-width:100%; }
+button{ font:inherit; color:inherit; background:none; border:0; padding:0; cursor:pointer; }
+a{ color:inherit; }
+:focus-visible{ outline:2px solid var(--orange); outline-offset:3px; }
+.vh{ position:absolute!important; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; }
+svg.i{ width:20px; height:20px; flex:none; }
+
+/* ---------- Buttons ---------- */
+.btn{ text-decoration:none; white-space:nowrap; display:inline-flex; align-items:center; justify-content:center; gap:8px; min-height:40px; padding:0 20px; border-radius:2px; font-weight:700; font-size:13px; letter-spacing:.02em; text-transform:uppercase; transition:background-color .15s, color .15s, border-color .15s; touch-action:manipulation; }
+.btn-primary{ background:var(--orange); color:var(--on-orange); }
+.btn-primary:hover{ background:var(--orange-2); }
+.btn-primary:disabled{ background:var(--surface-3); color:var(--muted); cursor:not-allowed; }
+.btn-ghost{ color:var(--orange); }
+.btn-ghost:hover{ color:var(--orange-2); background:rgba(244,117,33,.08); }
+.btn-outline{ border:2px solid var(--orange); color:var(--orange); }
+.btn-outline:hover{ background:rgba(244,117,33,.1); }
+.icon-btn{ width:40px; height:40px; display:inline-grid; place-items:center; border:2px solid var(--orange); border-radius:var(--radius); color:var(--orange); transition:background-color .15s; }
+.icon-btn:hover{ background:var(--surface-2); }
+.icon-btn[aria-pressed="true"]{ background:var(--orange); color:var(--on-orange); }
+.link{ color:var(--orange); font-weight:700; font-size:12px; text-transform:uppercase; letter-spacing:.04em; text-decoration:none; }
+.link:hover{ color:var(--orange-2); }
+
+/* ---------- Nav ---------- */
+.nav{ position:sticky; top:env(safe-area-inset-top,0px); z-index:40; display:flex; align-items:center; gap:32px; height:64px; padding:0 var(--pad); background:rgba(23,23,26,.92); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
+body::before{ content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top,0px); z-index:41; background:rgba(23,23,26,.92); }
+body[data-view="onboarding"] .nav, body[data-view="player"] .nav{ display:none; }
+.logo{ display:flex; align-items:center; gap:6px; color:var(--orange); text-decoration:none; font-weight:800; font-size:22px; letter-spacing:-.02em; }
+.logo svg{ width:150px; height:auto; display:block; }
+.nav-links{ display:flex; gap:28px; list-style:none; margin:0; padding:0; }
+.nav-links button{ font-size:14px; color:var(--text-2); padding:6px 0; position:relative; }
+.nav-links button:hover{ color:var(--text); }
+.nav-right{ margin-left:auto; display:flex; align-items:center; gap:8px; position:relative; }
+.nav-icon{ width:40px; height:40px; display:grid; place-items:center; border-radius:50%; color:var(--text); }
+.nav-icon:hover{ background:var(--surface-2); }
+.nav-icon[aria-current="page"]{ color:var(--orange); }
+.avatar{ width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--orange),#7a2fd6); display:grid; place-items:center; color:#fff; font-weight:800; font-size:13px; margin-left:6px; }
+.menu{ position:absolute; top:52px; right:0; width:320px; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px; box-shadow:0 16px 40px rgba(0,0,0,.5); z-index:60; }
+.menu h3{ font-size:12px; color:var(--muted); font-weight:500; margin:10px 10px 6px; }
+.menu-item{ display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%; text-align:left; padding:10px; border-radius:4px; font-size:14px; color:var(--text-2); }
+.menu-item:hover{ background:var(--surface-2); }
+.menu hr{ border:0; border-top:1px solid var(--border); margin:6px 0; }
+
+/* ---------- Switch ---------- */
+.switch{ width:44px; height:24px; border-radius:12px; background:var(--surface-3); position:relative; flex:none; transition:background-color .2s; }
+.switch::after{ content:""; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; transition:translate .2s; }
+[aria-checked="true"] > .switch, .switch[aria-checked="true"]{ background:var(--orange); }
+[aria-checked="true"] > .switch::after, .switch[aria-checked="true"]::after{ translate:20px 0; }
+
+/* ---------- Layout ---------- */
+main{ outline:none; }
+.page{ padding:0 var(--pad) 80px; }
+.row{ margin-top:40px; }
+.row-head{ display:flex; align-items:baseline; justify-content:space-between; margin-bottom:16px; }
+.row-head h2{ margin:0; font-size:22px; font-weight:700; color:var(--text); letter-spacing:-.01em; }
+.row-wrap{ position:relative; margin-right:calc(var(--pad) * -1); }
+.row-track{ display:grid; grid-auto-flow:column; gap:16px; overflow-x:auto; scroll-snap-type:x mandatory; overscroll-behavior-x:contain; scrollbar-width:none; padding:4px 0 8px; padding-right:var(--pad); scroll-padding-inline:0; touch-action:pan-x pan-y; }
+.row-track::-webkit-scrollbar{ display:none; }
+.row-track > *{ scroll-snap-align:start; }
+.row-track.poster{ grid-auto-columns:clamp(132px, 14vw, 184px); }
+.row-track.wide{ grid-auto-columns:clamp(240px, 22vw, 296px); }
+@media (prefers-reduced-motion: no-preference){ .row-track{ scroll-behavior:smooth; } }
+.row-btn{ position:absolute; top:0; bottom:58px; width:var(--pad); z-index:3; display:grid; place-items:center; color:#fff; opacity:0; transition:opacity .2s; }
+.row-btn span{ width:44px; height:44px; border-radius:50%; display:grid; place-items:center; background:rgba(36,36,38,.95); border:1px solid rgba(255,255,255,.14); }
+.row-btn.prev{ left:calc(var(--pad) * -1); background:linear-gradient(90deg, var(--bg) 30%, transparent); }
+.row-btn.next{ right:0; width:120px; justify-items:end; padding-right:20px; background:linear-gradient(270deg, var(--bg) 25%, rgba(10,10,13,0)); }
+.row-wrap:hover .row-btn:not([hidden]), .row-btn:focus-visible{ opacity:1; }
+.row-wrap .row-btn.next:not([hidden]){ opacity:1; }
+.row-btn[hidden]{ display:none; }
+
+/* ---------- Art (placeholder imagery) ---------- */
+.art{ position:relative; overflow:hidden; border-radius:var(--radius); container-type:inline-size;
+  background:
+    radial-gradient(110% 70% at 22% 12%, hsl(var(--h) 90% 64% / .9), transparent 58%),
+    radial-gradient(90% 70% at 88% 96%, hsl(calc(var(--h) + 50) 85% 52% / .75), transparent 62%),
+    linear-gradient(165deg, hsl(var(--h) 50% 24%), hsl(calc(var(--h) + 30) 60% 7%)); }
+.art::after{ content:""; position:absolute; inset:0; background:linear-gradient(180deg, transparent 45%, rgba(0,0,0,.55)); }
+.art-glyph{ position:absolute; right:-8%; top:-14%; font-size:96cqw; font-weight:800; line-height:1; color:rgba(255,255,255,.13); letter-spacing:-.06em; }
+.art-title{ position:absolute; left:8cqw; right:8cqw; bottom:7cqw; z-index:1; font-weight:800; font-size:clamp(14px, 13cqw, 30px); line-height:.95; color:#fff; letter-spacing:-.02em; text-wrap:balance; text-shadow:0 2px 12px rgba(0,0,0,.4); }
+.art-poster{ aspect-ratio:180/260; }
+.art-thumb{ aspect-ratio:16/9; }
+.art-thumb .art-title{ font-size:clamp(12px, 7cqw, 22px); }
+.art-thumb .art-ep{ position:absolute; left:6cqw; top:5cqw; z-index:1; font-weight:800; font-size:22cqw; color:rgba(255,255,255,.22); line-height:1; }
+.art-key{ position:absolute; inset:0; border-radius:0; }
+.art-key .art-glyph{ font-size:60cqw; right:4%; top:-20%; }
+.art-key .art-title{ display:none; }
+.art-key::after{ display:none; }
+
+/* ---------- Poster card ---------- */
+.pcard{ position:relative; min-width:0; }
+.pcard-link{ display:block; text-decoration:none; border-radius:var(--radius); position:relative; }
+.pcard-link .art{ transition:outline-color .15s, scale .25s; outline:2px solid transparent; outline-offset:-2px; }
+.pcard:hover .pcard-link .art{ outline-color:var(--orange); }
+@media (prefers-reduced-motion: no-preference){ .pcard:hover .pcard-link .art{ scale:1.02; } }
+.pcard-info{ position:absolute; inset:0; z-index:2; border-radius:var(--radius); padding:12px; display:flex; flex-direction:column; justify-content:flex-end; gap:6px; background:linear-gradient(180deg, rgba(10,10,13,.2), rgba(10,10,13,.95) 70%); opacity:0; transition:opacity .2s; font-size:12px; color:var(--text-2); pointer-events:none; }
+.pcard:hover .pcard-info, .pcard-link:focus-visible .pcard-info{ opacity:1; }
+.pcard-info p{ margin:0; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; overflow:hidden; }
+.pcard-info .tags{ color:var(--orange); font-weight:700; }
+.pcard-save{ position:absolute; top:8px; right:8px; z-index:3; width:32px; height:32px; border-radius:50%; display:grid; place-items:center; background:rgba(10,10,13,.75); color:#fff; opacity:0; transition:opacity .15s; }
+.pcard-save svg{ width:16px; height:16px; }
+.pcard:hover .pcard-save, .pcard-save:focus-visible, .pcard-save[aria-pressed="true"]{ opacity:1; }
+.pcard-save[aria-pressed="true"]{ color:var(--orange); }
+.pcard-title{ margin:10px 0 2px; font-size:14px; font-weight:500; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.pcard-meta{ margin:0; font-size:12px; color:var(--muted); }
+.pcard-reason{ margin:2px 0 0; font-size:12px; color:var(--orange); }
+.badge{ display:inline-block; background:var(--orange); color:var(--on-orange); font-weight:800; font-size:11px; padding:2px 6px; border-radius:2px; }
+
+/* ---------- Imagens reais (pasta imagens/) ---------- */
+.art-img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0; }
+.art.has-img .art-glyph, .art.has-img .art-title, .art.has-img .art-ep{ display:none; }
+.art.has-img::after{ display:none; }
+.stage-img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+.stage.has-img .blob{ display:none; }
+
+/* ---------- Episode tile (Continuar assistindo / episódios) ---------- */
+.ept{ position:relative; min-width:0; }
+.ept-link{ display:block; width:100%; text-align:left; position:relative; border-radius:var(--radius); }
+.ept-thumb{ position:relative; display:block; border-radius:var(--radius); overflow:hidden; }
+.ept-thumb .art{ border-radius:0; }
+.ept-thumb .badge{ position:absolute; top:8px; left:8px; z-index:2; }
+.ept-rest{ position:absolute; right:8px; bottom:12px; z-index:2; background:rgba(0,0,0,.75); color:#fff; font-weight:700; font-size:12px; padding:3px 8px; border-radius:2px; }
+.ept-thumb .bar{ position:absolute; left:0; right:0; bottom:0; }
+.ept-anime{ display:block; margin:12px 0 4px; font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ept-title{ display:block; font-size:15px; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ept-meta{ display:block; margin-top:4px; font-size:12px; color:var(--muted); }
+.ept.is-current .ept-meta{ color:var(--orange); font-weight:500; }
+.ept-hover{ position:absolute; inset:0; z-index:4; background:var(--surface); border-radius:var(--radius); padding:16px; display:flex; flex-direction:column; gap:8px; opacity:0; transition:opacity .2s; pointer-events:none; }
+.ept-link:hover .ept-hover, .ept-link:focus-visible .ept-hover{ opacity:1; }
+.ept-hover .ept-anime{ margin:0; }
+.ept-h-title{ font-size:16px; font-weight:700; color:#fff; line-height:1.25; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.ept-h-info{ display:flex; align-items:center; gap:8px; font-size:13px; color:var(--muted); }
+.ept-h-info svg{ width:14px; height:14px; }
+.ept-h-desc{ flex:1; min-height:0; font-size:13px; line-height:1.4; color:var(--text-2); overflow:hidden; display:-webkit-box; -webkit-line-clamp:4; -webkit-box-orient:vertical; }
+.ept-h-cta{ display:flex; align-items:center; gap:8px; color:var(--orange); font-weight:700; font-size:14px; text-transform:uppercase; letter-spacing:.02em; }
+.ept-h-cta svg{ width:16px; height:16px; }
+
+/* ---------- Continue watching ---------- */
+.cw-link{ display:block; width:100%; position:relative; border-radius:var(--radius); overflow:hidden; text-align:left; }
+.cw-link .art{ border-radius:var(--radius) var(--radius) 0 0; transition:filter .2s; }
+.cw-link:hover .art{ filter:brightness(.7); }
+.cw-play{ position:absolute; inset:0; display:grid; place-items:center; opacity:0; transition:opacity .2s; z-index:2; }
+.cw-play span{ width:52px; height:52px; border-radius:50%; background:var(--orange); color:var(--on-orange); display:grid; place-items:center; }
+.cw-link:hover .cw-play, .cw-link:focus-visible .cw-play{ opacity:1; }
+.bar{ display:block; height:4px; background:rgba(255,255,255,.18); position:relative; z-index:2; }
+.bar i{ display:block; height:100%; background:var(--orange); }
+.cw h3{ margin:10px 0 2px; font-size:14px; font-weight:500; color:var(--text); }
+.cw p{ margin:0; font-size:12px; color:var(--muted); }
+.cw .cw-ago{ color:var(--text-2); margin-top:2px; }
+.cw .cw-ago b{ color:var(--orange); font-weight:700; }
+
+/* ---------- Hero ---------- */
+.hero{ position:relative; height:min(78vh, 600px); min-height:440px; overflow:hidden; }
+.hero-slide{ position:absolute; inset:0; opacity:0; visibility:hidden; transition:opacity .6s, visibility 0s .6s; }
+.hero-slide.is-active{ opacity:1; visibility:visible; transition:opacity .6s; }
+.hero-shade{ position:absolute; inset:0; background:linear-gradient(90deg, var(--bg) 0%, rgba(10,10,13,.88) 32%, rgba(10,10,13,.1) 72%, transparent), linear-gradient(0deg, var(--bg) 0%, transparent 35%); }
+.hero-info{ position:absolute; left:var(--pad); bottom:96px; width:min(560px, calc(100% - var(--pad) * 2)); display:flex; flex-direction:column; gap:14px; }
+.hero-info h1{ margin:0; font-size:clamp(34px, 5vw, 56px); line-height:1; letter-spacing:-.03em; color:var(--text); font-weight:800; }
+.hero-meta{ font-size:13px; color:var(--muted); margin:0; }
+.hero-syn{ margin:0; font-size:16px; color:var(--text-2); max-width:52ch; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+.hero-resume{ margin:0; font-size:14px; color:var(--text); }
+.hero-resume .bar{ width:220px; margin-top:8px; border-radius:2px; overflow:hidden; }
+.hero-reason{ margin:0; font-size:13px; color:var(--orange); font-weight:500; }
+.hero-actions{ display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-top:4px; }
+.hero-ctrl{ position:absolute; left:var(--pad); bottom:40px; display:flex; align-items:center; gap:14px; }
+.dots{ display:flex; gap:6px; }
+.dots button{ min-width:24px; height:24px; display:grid; place-items:center; }
+.dots button i{ display:block; width:20px; height:4px; border-radius:2px; background:rgba(255,255,255,.3); transition:width .3s, background-color .3s; }
+.dots button[aria-current="true"] i{ width:40px; background:var(--orange); }
+.hero-pause{ width:32px; height:32px; border-radius:50%; display:grid; place-items:center; color:var(--text-2); }
+.hero-pause:hover{ background:var(--surface-2); }
+.hero-pause svg{ width:16px; height:16px; }
+
+/* ---------- Title page ---------- */
+.tp-hero{ position:relative; min-height:520px; display:flex; align-items:flex-end; padding:120px var(--pad) 56px; overflow:hidden; }
+.tp-hero .art-key{ z-index:0; }
+.tp-hero .hero-shade{ z-index:1; }
+.tp-info{ position:relative; z-index:2; max-width:560px; display:flex; flex-direction:column; gap:14px; }
+.tp-info h1{ margin:0; font-size:clamp(36px, 5vw, 52px); line-height:1; letter-spacing:-.03em; color:var(--text); font-weight:800; }
+.chips{ display:flex; flex-wrap:wrap; gap:8px; }
+.chip{ display:inline-flex; align-items:center; gap:8px; min-height:37px; padding:0 16px; border-radius:18px; background:var(--surface-2); border:1px solid var(--border); color:var(--text-2); font-size:13px; font-weight:500; transition:background-color .15s, border-color .15s, color .15s; }
+button.chip:hover{ border-color:#5a5a60; color:var(--text); }
+.chip[aria-pressed="true"], .chip.is-active{ background:rgba(244,117,33,.12); border-color:var(--orange); color:var(--orange); }
+.chip svg{ width:12px; height:12px; }
+.season-tabs{ display:flex; gap:8px; margin:8px 0 20px; }
+.ep{ position:relative; }
+.ep-check{ position:absolute; top:8px; right:8px; z-index:3; width:26px; height:26px; border-radius:50%; background:var(--orange); color:var(--on-orange); display:grid; place-items:center; }
+.ep-check svg{ width:14px; height:14px; }
+.ep.is-current .cw-link{ outline:2px solid var(--orange); outline-offset:2px; }
+.ep h3{ margin:10px 0 2px; font-size:14px; font-weight:500; color:var(--text); }
+.ep p{ margin:0; font-size:12px; color:var(--muted); }
+.ep p.now{ color:var(--orange); font-weight:500; }
+
+/* ---------- Search ---------- */
+.search-top{ background:var(--surface); padding:32px var(--pad) 24px; }
+.search-box{ position:relative; max-width:880px; margin:0 auto; }
+.search-box input{ width:100%; background:none; border:0; border-bottom:2px solid var(--orange); color:var(--text); font:inherit; font-size:30px; padding:6px 40px 10px 0; outline:none; caret-color:var(--orange); }
+.search-box input::placeholder{ color:#6b6b70; }
+.search-clear{ position:absolute; right:0; top:10px; width:32px; height:32px; display:grid; place-items:center; color:var(--muted); border-radius:50%; }
+.search-clear:hover{ color:var(--text); background:var(--surface-2); }
+.ac{ position:absolute; left:0; right:0; top:calc(100% + 10px); z-index:30; background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:8px; box-shadow:0 18px 40px rgba(0,0,0,.55); list-style:none; margin:0; }
+.ac li{ display:flex; align-items:center; gap:14px; padding:8px 12px; border-radius:4px; cursor:pointer; }
+.ac li[aria-selected="true"], .ac li:hover{ background:var(--surface-2); }
+.ac .thumb{ width:32px; height:44px; flex:none; }
+.ac .thumb .art-title{ display:none; }
+.ac .round{ width:44px; height:44px; border-radius:50%; flex:none; display:grid; place-items:center; background:#2e2e33; color:var(--orange); font-weight:800; font-size:14px; }
+.ac .txt{ flex:1; min-width:0; }
+.ac .name{ color:var(--text); font-size:16px; }
+.ac .name mark{ background:none; color:var(--text); font-weight:800; }
+.ac .sub{ color:var(--muted); font-size:13px; }
+.ac .kind{ color:var(--muted); font-size:11px; font-weight:500; letter-spacing:.06em; text-transform:uppercase; }
+.ac-hint{ color:var(--muted); font-size:12px; padding:6px 12px 2px; }
+.filters{ position:relative; display:flex; flex-wrap:wrap; gap:10px; align-items:center; padding:24px var(--pad) 0; }
+.filters .spacer{ flex:1; }
+.fpanel{ position:absolute; z-index:35; width:290px; background:#1c1c1f; border:1px solid var(--border); border-radius:8px; padding:12px; box-shadow:0 12px 32px rgba(0,0,0,.5); }
+.fpanel input[type="search"]{ width:100%; background:var(--surface-2); border:0; border-radius:4px; color:var(--text); font:inherit; font-size:13px; padding:10px 12px; margin-bottom:6px; outline:none; }
+.fpanel .opts{ max-height:300px; overflow:auto; }
+.opt{ display:flex; align-items:center; gap:12px; padding:9px 8px; border-radius:4px; font-size:14px; cursor:pointer; color:var(--text-2); }
+.opt:hover{ background:var(--surface-2); }
+.opt input{ appearance:none; width:18px; height:18px; margin:0; border:1.5px solid #66666b; border-radius:4px; display:grid; place-items:center; flex:none; }
+.opt input:checked{ background:var(--orange); border-color:var(--orange); }
+.opt input:checked::after{ content:""; width:10px; height:6px; border:2px solid var(--on-orange); border-top:0; border-right:0; rotate:-45deg; translate:0 -1px; }
+.opt input[type="radio"]{ border-radius:50%; }
+.opt input[type="radio"]:checked::after{ width:6px; height:6px; border:0; border-radius:50%; background:var(--on-orange); rotate:0deg; translate:0; }
+.opt .count{ margin-left:auto; color:var(--muted); font-size:12px; }
+.fpanel footer{ display:flex; justify-content:space-between; align-items:center; border-top:1px solid var(--border); margin-top:6px; padding-top:10px; }
+.fpanel footer .btn{ min-height:34px; padding:0 14px; font-size:12px; }
+.applied{ display:flex; flex-wrap:wrap; align-items:center; gap:8px; padding:16px var(--pad) 0; font-size:13px; color:var(--muted); }
+.applied .chip{ color:var(--text); }
+.applied .chip svg{ color:var(--muted); }
+.results-head{ margin:32px 0 16px; font-size:22px; color:var(--text); font-weight:700; letter-spacing:-.01em; }
+.grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:28px 16px; }
+.empty{ padding:48px 0; max-width:520px; }
+.empty h2{ color:var(--text); font-size:20px; margin:0 0 8px; }
+.empty p{ margin:0 0 16px; color:var(--muted); }
+
+/* ---------- Onboarding ---------- */
+.ob{ min-height:100vh; display:flex; flex-direction:column; align-items:center; padding:40px 24px 64px; position:relative; }
+.ob-skip{ position:absolute; top:40px; right:var(--pad); font-size:13px; color:var(--muted); text-decoration:underline; text-underline-offset:3px; }
+.ob-skip:hover{ color:var(--text); }
+.steps{ display:flex; flex-direction:column; align-items:center; gap:10px; margin:28px 0 36px; font-size:12px; color:var(--muted); }
+.steps .bars{ display:flex; gap:8px; }
+.steps .bars i{ width:56px; height:4px; border-radius:2px; background:var(--surface-3); transition:background-color .3s; }
+.steps .bars i.on{ background:var(--orange); }
+.ob h1{ margin:0; font-size:clamp(28px,4vw,36px); color:var(--text); letter-spacing:-.02em; text-align:center; font-weight:800; }
+.ob .lead{ margin:8px 0 32px; color:var(--muted); text-align:center; }
+.ob-body{ width:min(960px, 100%); display:flex; flex-direction:column; gap:28px; }
+.ob-group h2{ font-size:15px; margin:0 0 14px; color:var(--text); font-weight:700; }
+.bubbles{ display:flex; flex-wrap:wrap; gap:10px; }
+.bubble{ min-height:44px; padding:0 18px; border-radius:22px; background:var(--surface-2); border:1px solid var(--border); font-size:14px; color:var(--text-2); transition:background-color .15s, border-color .15s, color .15s; }
+.bubble:hover{ border-color:#5c5c62; color:var(--text); }
+.bubble[aria-pressed="true"]{ background:var(--orange); border-color:var(--orange); color:var(--on-orange); font-weight:500; }
+.radios{ display:flex; flex-wrap:wrap; gap:12px; border:0; margin:0; padding:0; }
+.radio{ display:flex; align-items:center; gap:10px; min-height:50px; padding:0 16px; border-radius:var(--radius); background:var(--surface-2); border:1px solid var(--border); cursor:pointer; font-size:14px; }
+.radio:has(input:checked){ border-color:var(--orange); background:rgba(244,117,33,.08); color:var(--text); }
+.radio input{ appearance:none; width:16px; height:16px; margin:0; border-radius:50%; border:1.5px solid #6a6a70; display:grid; place-items:center; }
+.radio input:checked{ border-color:var(--orange); }
+.radio input:checked::after{ content:""; width:8px; height:8px; border-radius:50%; background:var(--orange); }
+.toggle-row{ display:flex; align-items:center; justify-content:space-between; gap:16px; width:100%; text-align:left; padding:17px 21px; background:var(--surface); border:1px solid var(--border); border-radius:6px; }
+.toggle-row + .toggle-row{ margin-top:12px; }
+.toggle-row b{ display:block; color:var(--text); font-weight:500; font-size:15px; }
+.toggle-row small{ display:block; color:var(--muted); font-size:13px; margin-top:4px; }
+.selects{ display:flex; flex-wrap:wrap; gap:16px; }
+.field label{ display:block; font-size:12px; color:var(--muted); margin-bottom:6px; }
+.field select{ appearance:none; min-width:140px; height:44px; padding:0 40px 0 14px; border-radius:var(--radius); border:1px solid var(--border); background:var(--surface-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%23E0E0E0' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E") no-repeat right 14px center; color:var(--text); font:inherit; font-size:14px; }
+.note{ font-size:12px; color:var(--muted); margin:10px 0 0; }
+.result-box{ margin-top:18px; padding:17px 21px; background:var(--surface); border:1px solid var(--border); border-radius:6px; }
+.result-box b{ color:var(--text); font-weight:500; display:block; }
+.result-box small{ color:var(--muted); font-size:13px; }
+.result-box.ok{ border-color:rgba(244,117,33,.6); }
+.ob-picks{ display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:20px 16px; }
+.pick{ text-align:left; position:relative; }
+.pick .art{ outline:2px solid transparent; outline-offset:-2px; transition:outline-color .15s; }
+.pick[aria-pressed="true"] .art{ outline-color:var(--orange); }
+.pick .tint{ position:absolute; inset:0; aspect-ratio:180/260; border-radius:var(--radius); background:rgba(244,117,33,.18); opacity:0; transition:opacity .15s; z-index:2; pointer-events:none; }
+.pick[aria-pressed="true"] .tint{ opacity:1; }
+.pick .selo{ position:absolute; top:10px; right:10px; z-index:3; width:28px; height:28px; border-radius:50%; background:var(--orange); color:var(--on-orange); display:grid; place-items:center; scale:0; transition:scale .2s; }
+.pick .selo svg{ width:14px; height:14px; }
+.pick[aria-pressed="true"] .selo{ scale:1; }
+.pick span.t{ display:block; margin-top:10px; font-size:14px; color:var(--text); font-weight:500; }
+.pick span.m{ display:block; font-size:12px; color:var(--muted); }
+.ob-foot{ display:flex; align-items:center; gap:16px; margin-top:40px; flex-wrap:wrap; justify-content:center; }
+.ob-foot .count{ font-size:13px; color:var(--muted); min-width:120px; text-align:right; }
+
+/* ---------- Player ---------- */
+.player{ position:fixed; inset:0; z-index:80; background:#000; color:var(--text); overflow:hidden; user-select:none; }
+.player[hidden]{ display:none; }
+.stage{ position:absolute; inset:0; overflow:hidden; background:hsl(var(--h,265) 40% 8%); }
+.blob{ position:absolute; width:70vmax; height:70vmax; border-radius:50%; filter:blur(60px); opacity:.55; }
+.blob.a{ background:hsl(var(--h,265) 85% 45%); left:-20vmax; top:-25vmax; }
+.blob.b{ background:hsl(calc(var(--h,265) + 60) 80% 40%); right:-25vmax; bottom:-30vmax; }
+.blob.c{ background:hsl(calc(var(--h,265) - 40) 70% 35%); left:30%; top:30%; width:40vmax; height:40vmax; }
+@media (prefers-reduced-motion: no-preference){
+  .blob.a{ animation:drift-a 14s ease-in-out infinite alternate; }
+  .blob.b{ animation:drift-b 18s ease-in-out infinite alternate; }
+  .blob.c{ animation:drift-c 11s ease-in-out infinite alternate; }
+  .player.is-paused .blob, .player.is-buffering .blob{ animation-play-state:paused; }
+}
+@keyframes drift-a{ to{ translate:22vmax 18vmax; } }
+@keyframes drift-b{ to{ translate:-18vmax -14vmax; } }
+@keyframes drift-c{ to{ translate:-20vmax 10vmax; scale:1.3; } }
+.seg-label{ position:absolute; left:50%; top:42%; translate:-50% -50%; text-align:center; pointer-events:none; }
+.seg-label b{ display:block; font-size:clamp(28px,5vw,64px); font-weight:800; letter-spacing:-.03em; color:rgba(255,255,255,.9); }
+.seg-label span{ font-size:14px; color:rgba(255,255,255,.65); }
+.subs{ position:absolute; left:50%; bottom:150px; translate:-50% 0; max-width:min(760px, 90vw); text-align:center; font-size:clamp(16px,2vw,24px); font-weight:500; color:#fff; text-shadow:0 2px 6px #000, 0 0 2px #000; pointer-events:none; }
+.p-top{ position:absolute; top:0; left:0; right:0; padding:28px 48px; padding-top:calc(28px + env(safe-area-inset-top,0px)); display:flex; align-items:center; gap:16px; background:linear-gradient(180deg, rgba(0,0,0,.6), transparent); transition:opacity .3s; }
+.p-top h1{ margin:0; font-size:17px; font-weight:700; }
+.p-top p{ margin:2px 0 0; font-size:12px; color:#b4b4b9; }
+.p-back{ width:40px; height:40px; display:grid; place-items:center; border-radius:50%; }
+.p-back:hover{ background:rgba(255,255,255,.12); }
+.p-bottom{ position:absolute; left:0; right:0; bottom:0; padding:60px 48px 26px; padding-bottom:calc(26px + env(safe-area-inset-bottom,0px)); background:linear-gradient(0deg, rgba(0,0,0,.85), transparent); transition:opacity .3s; }
+.player.hide-ui .p-top, .player.hide-ui .p-bottom{ opacity:0; }
+.player.hide-ui{ cursor:none; }
+.timeline{ position:relative; height:20px; display:flex; align-items:center; cursor:pointer; touch-action:none; }
+.tl-track{ position:relative; height:4px; width:100%; background:rgba(255,255,255,.22); border-radius:2px; transition:height .15s; }
+.timeline:hover .tl-track, .timeline.dragging .tl-track{ height:7px; }
+.tl-seg{ position:absolute; top:0; bottom:0; background:rgba(255,255,255,.18); }
+.tl-buf{ position:absolute; left:0; top:0; bottom:0; background:rgba(255,255,255,.35); border-radius:2px; }
+.tl-fill{ position:absolute; left:0; top:0; bottom:0; background:var(--orange); border-radius:2px; }
+.tl-knob{ position:absolute; top:50%; width:14px; height:14px; margin:-7px 0 0 -7px; border-radius:50%; background:var(--orange); scale:0; transition:scale .15s; }
+.timeline:hover .tl-knob, .timeline.dragging .tl-knob{ scale:1; }
+.tl-tip{ position:absolute; bottom:22px; translate:-50% 0; background:rgba(0,0,0,.85); padding:3px 8px; border-radius:3px; font-size:12px; opacity:0; pointer-events:none; white-space:nowrap; }
+.timeline:hover .tl-tip{ opacity:1; }
+.p-ctrls{ display:flex; align-items:center; gap:8px; margin-top:12px; }
+.p-ctrls .grow{ flex:1; }
+.pc{ width:44px; height:44px; border-radius:50%; display:grid; place-items:center; color:#ddd; position:relative; }
+.pc:hover{ background:rgba(255,255,255,.12); color:#fff; }
+.pc .lbl{ font-weight:800; font-size:14px; }
+.p-time{ font-size:13px; color:#ddd; margin-left:8px; font-variant-numeric:tabular-nums; }
+.vol{ width:84px; accent-color:var(--orange); }
+.p-pop{ position:absolute; bottom:110px; right:48px; z-index:5; width:280px; background:rgba(23,23,26,.97); border:1px solid var(--border); border-radius:8px; padding:8px; box-shadow:0 12px 32px rgba(0,0,0,.6); }
+.p-pop h3{ font-size:12px; color:var(--muted); font-weight:500; margin:8px 8px 4px; }
+.p-pop .menu-item[aria-checked="true"]{ color:var(--orange); }
+.skipbtn{ position:absolute; right:48px; bottom:130px; z-index:4; min-width:196px; height:44px; padding:0 18px; border:2px solid var(--orange); border-radius:4px; background:rgba(10,10,13,.6); color:var(--orange); font-weight:700; font-size:13px; letter-spacing:.02em; text-transform:uppercase; overflow:hidden; display:flex; align-items:center; justify-content:center; gap:10px; isolation:isolate; }
+.skipbtn:hover{ background:rgba(10,10,13,.8); }
+.skipbtn .fill{ position:absolute; inset:0; z-index:-1; background:rgba(244,117,33,.3); transform-origin:left; scale:0 1; transition:scale .25s linear; }
+.skipbtn small{ font-weight:400; color:rgba(255,255,255,.75); text-transform:none; font-size:12px; }
+@media (prefers-reduced-motion: no-preference){
+  .skipbtn{ animation:pop-in .25s ease-out; }
+}
+@keyframes pop-in{ from{ opacity:0; translate:0 8px; } }
+.buffer{ position:absolute; inset:0; z-index:6; background:rgba(0,0,0,.55); display:grid; place-items:center; }
+.spinner{ width:48px; height:48px; border-radius:50%; border:4px solid rgba(255,255,255,.15); border-top-color:var(--orange); }
+@media (prefers-reduced-motion: no-preference){ .spinner{ animation:spin .9s linear infinite; } }
+@media (prefers-reduced-motion: reduce){ .spinner{ animation:spin 3s linear infinite; } }
+@keyframes spin{ to{ rotate:360deg; } }
+.diag{ width:min(460px, 90vw); background:rgba(23,23,26,.94); border:1px solid var(--border); border-radius:8px; padding:28px 32px; text-align:center; display:flex; flex-direction:column; align-items:center; gap:12px; }
+.diag h2{ margin:4px 0 0; font-size:20px; color:#fff; }
+.diag p{ margin:0; color:#bfbfc4; font-size:14px; line-height:1.5; }
+.diag .meter{ display:flex; gap:24px; font-size:12px; color:var(--muted); margin:4px 0; }
+.diag .meter b{ display:block; font-size:18px; color:#fff; }
+.diag .meter b.low{ color:#ff6b5b; }
+.diag .acts{ display:flex; gap:12px; margin-top:8px; flex-wrap:wrap; justify-content:center; }
+
+/* ---------- Toast ---------- */
+.toasts{ position:fixed; left:50%; bottom:calc(28px + env(safe-area-inset-bottom,0px)); translate:-50% 0; z-index:120; display:flex; flex-direction:column; gap:8px; align-items:center; pointer-events:none; }
+.toast{ pointer-events:auto; display:flex; align-items:center; gap:16px; background:#f2f2f2; color:#111; padding:12px 16px; border-radius:6px; font-size:14px; font-weight:500; box-shadow:0 10px 30px rgba(0,0,0,.4); }
+.toast button{ color:#c4510a; font-weight:800; font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+@media (prefers-reduced-motion: no-preference){ .toast{ animation:pop-in .25s ease-out; } }
+
+/* ---------- View transitions ---------- */
+@media (prefers-reduced-motion: no-preference){
+  ::view-transition-old(root){ animation:vt-out .18s ease-in both; }
+  ::view-transition-new(root){ animation:vt-in .28s ease-out both; }
+}
+@media (prefers-reduced-motion: reduce){
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*){ animation:none !important; }
+}
+@keyframes vt-out{ to{ opacity:0; } }
+@keyframes vt-in{ from{ opacity:0; translate:0 8px; } }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px){
+  :root{ --pad:20px; }
+  .nav{ gap:16px; }
+  .nav-links{ display:none; }
+  .hero-info{ bottom:84px; }
+  .search-box input{ font-size:22px; }
+  .p-top{ padding-left:16px; padding-right:16px; }
+  .p-bottom{ padding-left:16px; padding-right:16px; }
+  .vol, .hide-sm{ display:none; }
+  .skipbtn{ right:16px; bottom:120px; }
+  .p-pop{ right:16px; }
+  .ob-skip{ position:static; margin-bottom:8px; }
+  .hero-actions .btn-ghost{ display:none; }
+  .hero-info{ bottom:72px; }
+  .hero-ctrl{ bottom:28px; }
+  .menu{ width:min(320px, calc(100vw - 32px)); }
+}
+</style>
+</head>
+<body data-view="home">
+
+<header class="nav" id="nav">
+  <a class="logo" href="#inicio" aria-label="Crunchyroll, início">
+    <svg viewBox="0 0 171 32" fill="none" aria-hidden="true"><path d="M167.22 5.71429H170.592V24.9199H167.22V5.71429Z" fill="#F47521"/><path d="M159.944 5.71429H163.317V24.9199H159.944V5.71429Z" fill="#F47521"/><path d="M157.101 17.9791C157.101 22.6063 154.787 25.0871 150.523 25.0871C146.258 25.0871 143.944 22.6063 143.944 17.9791C143.944 13.3519 146.258 10.8711 150.523 10.8711C154.787 10.8711 157.101 13.3519 157.101 17.9791ZM153.895 17.9791C153.895 14.2439 152.641 13.547 150.69 13.547C148.739 13.547 147.484 14.2439 147.484 17.9791C147.484 21.7143 148.739 22.4111 150.69 22.4111C152.474 22.4111 153.895 21.7143 153.895 17.9791Z" fill="#F47521"/><path d="M142.523 10.8711V13.7143C140.739 13.7143 138.62 13.7143 138.62 14.6063V24.9199H135.247V12.6551C135.415 10.5087 142.523 10.8711 142.523 10.8711Z" fill="#F47521"/><path d="M122.258 30.4111C124.767 24.1951 124.571 24.7247 124.767 24.1951L119.777 11.0383H123.345L126.551 20.6272L129.561 11.0383H133.129L127.805 25.2544L125.854 30.4111H122.258Z" fill="#F47521"/><path d="M117.826 16.5575V24.9199H114.453V16.3624C114.453 15.108 114.091 13.8815 111.08 13.8815C110.3 13.9094 109.519 14.0209 108.767 14.2439V24.9199H105.394V5.71429H108.767V11.2334C109.659 10.8432 110.634 10.676 111.61 10.7038C115.679 10.8711 117.826 12.9895 117.826 16.5575Z" fill="#F47521"/><path d="M99.1777 22.2439C100.404 22.1882 101.603 21.9652 102.746 21.5192V24.3624C101.436 24.892 100.07 25.115 98.6481 25.0592C94.3833 25.0592 92.0697 22.5784 92.0697 17.9512C92.0697 13.324 94.3833 10.676 98.6481 10.676C100.042 10.7317 101.408 10.9547 102.746 11.4007V14.2439C101.603 13.7979 100.404 13.5749 99.1777 13.547C96.8641 13.547 95.4425 14.2439 95.4425 17.8118C95.4425 21.5192 96.8641 22.2439 99.1777 22.2439Z" fill="#F47521"/><path d="M89.9233 16.1951V24.892H86.7178V16.1951C86.7178 14.9408 86.7178 13.7143 83.8746 13.7143C82.9826 13.7143 81.1986 13.8815 81.1986 14.4111V24.892H77.993V13.3519C77.993 11.0383 80.8362 10.676 84.3763 10.676C87.9721 10.8711 89.9233 12.2927 89.9233 16.1951Z" fill="#F47521"/><path d="M74.8153 11.0383V18.676C74.8153 22.7735 73.3937 25.2544 68.5993 25.2544C63.8049 25.2544 62.5505 22.7735 62.5505 18.676V11.0383H65.7561V19.0383C65.7561 21.3519 66.6481 22.0488 68.5993 22.0488C70.5505 22.0488 71.4425 21.3519 71.4425 19.0383V11.0383H74.8153Z" fill="#F47521"/><path d="M59.9024 10.8711V13.7143C58.1185 13.7143 56 13.7143 56 14.6063V24.9199H52.6272V12.6551C52.7944 10.5087 59.9024 10.8711 59.9024 10.8711Z" fill="#F47521"/><path d="M46.0209 22.2439C47.1916 22.216 48.3345 21.9652 49.3937 21.5192V24.3624C48.0836 24.892 46.7178 25.115 45.2962 25.0592C41.0314 25.0592 38.7178 22.5784 38.7178 17.9512C38.7178 13.324 41.0314 10.676 45.2962 10.676C46.6899 10.7317 48.0558 10.9547 49.3937 11.4007V14.2439C48.3066 13.8258 47.1638 13.5749 46.0209 13.547C43.7073 13.547 42.2857 14.2439 42.2857 17.8118C42.1185 21.5192 43.7352 22.2439 46.0209 22.2439Z" fill="#F47521"/><path d="M3.93031 17.9791C3.93031 10.2021 10.23 3.93031 18.007 3.93031C25.338 3.95819 31.4146 9.58885 32 16.892V16C32 7.16376 24.8362 0 16 0C7.16376 0 0 7.19164 0 16.0279C0 24.8641 7.16376 32 16 32H17.0592C9.70035 31.4983 3.95819 25.3659 3.93031 17.9791Z" fill="#F47521"/><path d="M25.5889 18.676C22.7456 18.676 20.4599 16.3902 20.4321 13.5749C20.4321 11.4007 21.77 9.47735 23.8049 8.72474C22.216 7.8885 20.4599 7.44251 18.6481 7.47038C12.4599 7.47038 7.44251 12.4878 7.44251 18.676C7.44251 24.8641 12.4599 29.8815 18.6481 29.8815C24.8362 29.8815 29.8537 24.8641 29.8537 18.676C29.8815 17.9512 29.8258 17.2544 29.6864 16.5296C28.8223 17.9512 27.2334 18.7596 25.5889 18.676Z" fill="#F47521"/></svg>
+  </a>
+  <ul class="nav-links">
+    <li><button data-action="nav-preset" data-preset="novidades">Novidades</button></li>
+    <li><button data-action="nav-preset" data-preset="populares">Populares</button></li>
+    <li><button data-action="nav-preset" data-preset="simulcast">Simulcast</button></li>
+    <li><button data-action="nav-preset" data-preset="categorias">Categorias</button></li>
+  </ul>
+  <div class="nav-right">
+    <a class="nav-icon" href="#busca" id="nav-search" aria-label="Buscar"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></a>
+    <a class="nav-icon" href="#minha-lista" id="nav-list" aria-label="Minha lista"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 3h12v18l-6-4.5L6 21z"/></svg></a>
+    <button class="nav-icon" data-action="toggle-account" aria-haspopup="true" aria-expanded="false" aria-label="Conta e preferências"><span class="avatar" aria-hidden="true">R</span></button>
+    <div class="menu" id="account-menu" hidden></div>
+  </div>
+</header>
+
+<main id="app" tabindex="-1"></main>
+
+<div class="player" id="player" hidden aria-label="Player de vídeo">
+  <div class="stage" id="stage"><img class="stage-img" id="stage-img" alt="" hidden><span class="blob a"></span><span class="blob b"></span><span class="blob c"></span>
+    <div class="seg-label" id="seg-label" hidden></div>
+    <div class="subs" id="subs" aria-live="off"></div>
+  </div>
+  <div class="p-top">
+    <button class="p-back" data-action="player-back" aria-label="Voltar para a página do título"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12H5M11 5l-7 7 7 7"/></svg></button>
+    <div><h1 id="p-title"></h1><p id="p-sub"></p></div>
+  </div>
+  <div id="skip-slot"></div>
+  <div class="p-bottom">
+    <div class="timeline" id="timeline" role="slider" tabindex="0" aria-label="Posição do episódio" aria-valuemin="0" aria-valuemax="1440" aria-valuenow="0">
+      <div class="tl-track"><span class="tl-seg" id="seg-intro"></span><span class="tl-seg" id="seg-outro"></span><span class="tl-buf" id="tl-buf"></span><span class="tl-fill" id="tl-fill"></span><span class="tl-knob" id="tl-knob"></span></div>
+      <span class="tl-tip" id="tl-tip">0:00</span>
+    </div>
+    <div class="p-ctrls">
+      <button class="pc" data-action="seek-rel" data-d="-10" aria-label="Voltar 10 segundos"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.5-5.8"/><path d="M4 3v5h5"/></svg></button>
+      <button class="pc" data-action="toggle-play" id="pc-play" aria-label="Pausar"></button>
+      <button class="pc" data-action="seek-rel" data-d="10" aria-label="Avançar 10 segundos"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.5-5.8"/><path d="M20 3v5h-5"/></svg></button>
+      <button class="pc" data-action="toggle-mute" id="pc-mute" aria-label="Silenciar"></button>
+      <input class="vol" id="vol" type="range" min="0" max="100" value="80" aria-label="Volume">
+      <span class="p-time" id="p-time">0:00 / 24:00</span>
+      <span class="grow"></span>
+      <button class="pc" data-action="next-ep" id="pc-next" aria-label="Próximo episódio"><svg class="i" viewBox="0 0 24 24" fill="currentColor"><path d="M5 4l10 8-10 8z"/><rect x="17" y="4" width="2.6" height="16" rx="1"/></svg></button>
+      <button class="pc" data-action="p-pop" data-pop="subs" aria-label="Legendas" aria-haspopup="true"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 13h4M13 13h4M7 16h6" stroke-linecap="round"/></svg></button>
+      <button class="pc" data-action="p-pop" data-pop="speed" aria-label="Velocidade" aria-haspopup="true"><span class="lbl" id="speed-lbl">1x</span></button>
+      <button class="pc" data-action="p-pop" data-pop="settings" aria-label="Configurações" aria-haspopup="true"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+      <button class="pc" data-action="fullscreen" aria-label="Tela cheia"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+    </div>
+  </div>
+  <div class="p-pop" id="p-pop" hidden></div>
+  <div id="buffer-slot"></div>
+</div>
+
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+
+<script>
+/* =========================================================
+   Dados (imagens são placeholders gerados por cor)
+   ========================================================= */
+const RATINGS = ['L','A10','A12','A14','A16','A18'];
+const EP_LEN = 1440, INTRO = [20, 110], OUTRO = 1350;
+const MONTHS = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const GENRES = ['Ação','Aventura','Comédia','Drama','Fantasia','Romance','Terror','Slice of life','Esportes','Sci-fi','Mistério','Sobrenatural'];
+const THEMES = ['Isekai','Vida escolar','Mecha','Artes marciais','Magia','Música','Culinária','Sobrevivência','Viagem no tempo','Militar'];
+const STUDIOS = ['MAPPA','Ufotable','Wit Studio','Kyoto Animation','Madhouse','Bones','A-1 Pictures','CloverWorks','Trigger','Sunrise'];
+const SUB_LANGS = ['Português (Brasil)','English','Español (LA)','Español (España)','Français','Deutsch','Sem legenda'];
+const DUB_LANGS = ['Áudio original (JP)','Português (Brasil)','English','Español (LA)','Español (España)','Français','Deutsch'];
+
+const T = [
+ {id:'jujutsu-kaisen', t:'Jujutsu Kaisen', h:265, type:'Série', g:['Ação','Sobrenatural'], th:['Vida escolar','Magia'], st:'MAPPA', y:2020, r:'A14', status:'Em exibição', dub:['Português','Inglês','Espanhol'], seasons:[24,23], pop:99, syn:'Yuji Itadori engole um dedo amaldiçoado para proteger os colegas e passa a dividir o corpo com Sukuna, a maldição mais temida do Japão.'},
+ {id:'jujutsu-kaisen-0', t:'Jujutsu Kaisen 0', h:250, type:'Filme', g:['Ação','Sobrenatural'], th:['Vida escolar'], st:'MAPPA', y:2021, r:'A14', status:'Finalizado', dub:['Português','Inglês'], seasons:[1], pop:88, syn:'Yuta Okkotsu é assombrado pelo espírito da amiga de infância e entra na escola de feitiçaria para aprender a controlá-la.'},
+ {id:'chainsaw-man', t:'Chainsaw Man', h:355, type:'Série', g:['Ação','Sobrenatural','Terror'], th:['Sobrevivência'], st:'MAPPA', y:2022, r:'A18', status:'Em exibição', dub:['Português','Inglês'], seasons:[12], pop:95, syn:'Afundado em dívidas, Denji se funde ao seu cão-demônio e vira um caçador de demônios a serviço de uma organização nada confiável.'},
+ {id:'hells-paradise', t:"Hell's Paradise", h:20, type:'Série', g:['Ação','Fantasia','Sobrenatural'], th:['Sobrevivência','Artes marciais'], st:'MAPPA', y:2023, r:'A16', status:'Em exibição', dub:['Português','Inglês'], seasons:[13], pop:84, syn:'Um ninja condenado ganha uma chance de perdão: encontrar o elixir da imortalidade numa ilha onde tudo parece querer devorá-lo.'},
+ {id:'dr-stone', t:'Dr. Stone', h:150, type:'Série', g:['Aventura','Sci-fi','Comédia'], th:['Sobrevivência'], st:'TMS', y:2019, r:'A12', status:'Em exibição', dub:['Português','Inglês'], seasons:[24,11,22], pop:86, syn:'Milhares de anos após toda a humanidade virar pedra, Senku desperta e decide reconstruir a civilização usando apenas a ciência.'},
+ {id:'vinland-saga', t:'Vinland Saga', h:30, type:'Série', g:['Ação','Aventura','Drama'], th:['Militar'], st:'Wit Studio', y:2019, r:'A16', status:'Finalizado', dub:['Português','Inglês'], seasons:[24,24], pop:90, syn:'Thorfinn cresce entre guerreiros vikings em busca de vingança, até descobrir que a guerra pode ser o verdadeiro inimigo.'},
+ {id:'kaguya-sama', t:'Kaguya-sama', h:330, type:'Série', g:['Comédia','Romance'], th:['Vida escolar'], st:'A-1 Pictures', y:2019, r:'A12', status:'Finalizado', dub:['Inglês'], seasons:[12,12,13], pop:83, syn:'Os dois gênios do conselho estudantil estão apaixonados, mas nenhum aceita admitir primeiro e transformam isso numa guerra de estratégia.'},
+ {id:'frieren', t:'Frieren', h:110, type:'Série', g:['Aventura','Fantasia','Drama'], th:['Magia'], st:'Madhouse', y:2023, r:'A12', status:'Em exibição', dub:['Português','Inglês'], seasons:[28], pop:97, syn:'Depois de derrotar o Rei Demônio, a elfa Frieren percebe quão pouco conhecia os companheiros e parte numa nova jornada.'},
+ {id:'solo-leveling', t:'Solo Leveling', h:220, type:'Série', g:['Ação','Fantasia'], th:['Sobrevivência'], st:'A-1 Pictures', y:2024, r:'A16', status:'Em exibição', dub:['Português','Inglês'], seasons:[12,13], pop:96, syn:'O caçador mais fraco do mundo recebe um sistema misterioso que permite que ele fique mais forte a cada missão.'},
+ {id:'demon-slayer', t:'Demon Slayer', h:175, type:'Série', g:['Ação','Sobrenatural','Fantasia'], th:['Artes marciais'], st:'Ufotable', y:2019, r:'A14', status:'Em exibição', dub:['Português','Inglês','Espanhol'], seasons:[26,18,11,8], pop:98, syn:'Tanjiro vira caçador de demônios para salvar a irmã, transformada em demônio na noite em que perdeu a família.'},
+ {id:'castelo-infinito', t:'Demon Slayer: Castelo Infinito', h:195, type:'Filme', g:['Ação','Sobrenatural'], th:['Artes marciais'], st:'Ufotable', y:2025, r:'A14', status:'Finalizado', dub:['Português'], seasons:[1], pop:94, syn:'Os caçadores são arrastados para a fortaleza de Muzan e enfrentam os demônios mais poderosos da série.'},
+ {id:'tokyo-ghoul', t:'Tokyo Ghoul', h:0, type:'Série', g:['Ação','Terror','Sobrenatural'], th:[], st:'Pierrot', y:2014, r:'A16', status:'Finalizado', dub:['Português','Inglês'], seasons:[12,12], pop:80, syn:'Depois de um encontro quase fatal, Kaneki vira meio ghoul e precisa sobreviver entre humanos e criaturas que se alimentam deles.'},
+ {id:'gachiakuta', t:'Gachiakuta', h:10, type:'Série', g:['Ação','Fantasia'], th:['Sobrevivência'], st:'Bones', y:2025, r:'A14', status:'Em exibição', dub:['Português'], seasons:[12], pop:85, syn:'Acusado de um crime que não cometeu, Rudo é jogado no abismo onde a cidade despeja seu lixo e descobre um poder ligado aos objetos descartados.'},
+ {id:'attack-on-titan', t:'Attack on Titan', h:40, type:'Série', g:['Ação','Drama','Mistério'], th:['Militar','Sobrevivência'], st:'Wit Studio', y:2013, r:'A16', status:'Finalizado', dub:['Português','Inglês','Espanhol'], seasons:[25,12,22,28], pop:96, syn:'A humanidade vive cercada por muralhas para escapar de titãs, até o dia em que uma delas cai.'},
+ {id:'black-clover', t:'Black Clover', h:140, type:'Série', g:['Ação','Fantasia','Comédia'], th:['Magia'], st:'Pierrot', y:2017, r:'A12', status:'Finalizado', dub:['Português','Inglês'], seasons:[51,51,51,17], pop:82, syn:'Num mundo onde todos usam magia, Asta nasce sem nenhuma e decide virar o Rei Mago mesmo assim.'},
+ {id:'jojo', t:'JoJo: Steel Ball Run', h:90, type:'Série', g:['Ação','Aventura','Sobrenatural'], th:[], st:'David Production', y:2026, r:'A14', status:'Em exibição', dub:[], seasons:[12], pop:89, syn:'Uma corrida a cavalo atravessa os Estados Unidos, e cada competidor esconde um motivo e um poder diferentes.'},
+ {id:'dragon-ball-super', t:'Dragon Ball Super', h:45, type:'Série', g:['Ação','Aventura','Comédia'], th:['Artes marciais'], st:'Toei', y:2015, r:'A10', status:'Finalizado', dub:['Português','Inglês','Espanhol'], seasons:[131], pop:87, syn:'Com a Terra em paz, Goku descobre deuses, universos paralelos e adversários muito acima de tudo que já enfrentou.'},
+ {id:'fairy-tail', t:'Fairy Tail: 100 Years Quest', h:5, type:'Série', g:['Aventura','Fantasia','Comédia'], th:['Magia'], st:'J.C.Staff', y:2024, r:'A12', status:'Em exibição', dub:['Inglês'], seasons:[25], pop:72, syn:'Natsu e a guilda aceitam a missão que ninguém conseguiu concluir em um século.'},
+ {id:'one-piece', t:'One Piece', h:210, type:'Série', g:['Ação','Aventura','Comédia'], th:[], st:'Toei', y:1999, r:'A12', status:'Em exibição', dub:['Português','Inglês','Espanhol'], seasons:[61,77,91,130], pop:97, syn:'Luffy e seu bando atravessam a Grand Line atrás do tesouro deixado pelo lendário Rei dos Piratas.'},
+ {id:'noragami', t:'Noragami', h:195, type:'Série', g:['Ação','Sobrenatural','Comédia'], th:[], st:'Bones', y:2014, r:'A14', status:'Finalizado', dub:['Inglês'], seasons:[12,13], pop:78, syn:'Yato, um deus sem templo nem fiéis, aceita qualquer pedido por cinco ienes para conquistar seu próprio santuário.'},
+ {id:'code-geass', t:'Code Geass', h:350, type:'Série', g:['Ação','Drama','Sci-fi'], th:['Mecha','Militar'], st:'Sunrise', y:2006, r:'A14', status:'Finalizado', dub:['Português','Inglês'], seasons:[25,25], pop:85, syn:'Um príncipe exilado ganha o poder de dar ordens irrecusáveis e lidera uma rebelião contra o império que o abandonou.'},
+ {id:'hunter-x-hunter', t:'Hunter x Hunter', h:120, type:'Série', g:['Ação','Aventura','Fantasia'], th:['Artes marciais'], st:'Madhouse', y:2011, r:'A14', status:'Finalizado', dub:['Português','Inglês'], seasons:[148], pop:93, syn:'Gon faz o exame de Hunter para encontrar o pai e descobre um mundo de criaturas raras, rivais e amizades improváveis.'},
+ {id:'naruto-shippuden', t:'Naruto Shippuden', h:28, type:'Série', g:['Ação','Aventura'], th:['Artes marciais'], st:'Pierrot', y:2007, r:'A12', status:'Finalizado', dub:['Português','Inglês'], seasons:[500], pop:90, syn:'Mais velho e mais forte, Naruto volta à Vila da Folha para salvar o amigo Sasuke e enfrentar a Akatsuki.'},
+ {id:'bleach', t:'Bleach', h:50, type:'Série', g:['Ação','Sobrenatural'], th:['Artes marciais'], st:'Pierrot', y:2004, r:'A14', status:'Em exibição', dub:['Português','Inglês'], seasons:[366,13], pop:88, syn:'Ichigo ganha os poderes de uma ceifadora de almas e passa a proteger os vivos dos espíritos malignos.'},
+ {id:'bungo-stray-dogs', t:'Bungo Stray Dogs', h:15, type:'Série', g:['Ação','Mistério','Sobrenatural'], th:[], st:'Bones', y:2016, r:'A14', status:'Finalizado', dub:['Inglês'], seasons:[12,12,12], pop:76, syn:'Um órfão com um poder que não controla entra para uma agência de detetives formada por pessoas com habilidades estranhas.'},
+ {id:'mob-psycho-100', t:'Mob Psycho 100', h:290, type:'Série', g:['Ação','Comédia','Sobrenatural'], th:['Vida escolar'], st:'Bones', y:2016, r:'A12', status:'Finalizado', dub:['Português','Inglês'], seasons:[12,13,12], pop:84, syn:'Um estudante com poderes psíquicos imensos só quer uma vida normal, mas o mentor charlatão vive o colocando em encrenca.'},
+ {id:'my-hero-academia', t:'My Hero Academia', h:205, type:'Série', g:['Ação','Comédia'], th:['Vida escolar'], st:'Bones', y:2016, r:'A12', status:'Finalizado', dub:['Português','Inglês','Espanhol'], seasons:[13,25,25,25], pop:89, syn:'Num mundo onde quase todos têm superpoderes, Izuku nasce sem nenhum e mesmo assim sonha em ser o maior herói.'},
+ {id:'spy-x-family', t:'Spy x Family', h:340, type:'Série', g:['Comédia','Ação','Slice of life'], th:[], st:'CloverWorks', y:2022, r:'A10', status:'Em exibição', dub:['Português','Inglês'], seasons:[25,12], pop:92, syn:'Um espião monta uma família falsa para cumprir uma missão, sem saber que a esposa é assassina e a filha lê mentes.'},
+ {id:'dandadan', t:'Dandadan', h:300, type:'Série', g:['Ação','Comédia','Sobrenatural','Sci-fi'], th:[], st:'Science SARU', y:2024, r:'A14', status:'Em exibição', dub:['Português','Inglês'], seasons:[12,12], pop:93, syn:'Uma garota que acredita em fantasmas e um garoto que acredita em alienígenas descobrem que os dois estavam certos.'},
+ {id:'blue-lock', t:'Blue Lock', h:215, type:'Série', g:['Esportes','Drama'], th:[], st:'8bit', y:2022, r:'A12', status:'Em exibição', dub:['Português','Inglês'], seasons:[24,14], pop:86, syn:'Trezentos atacantes disputam uma vaga num programa radical para criar o artilheiro mais egoísta do mundo.'},
+];
+const byId = Object.fromEntries(T.map(t => [t.id, t]));
+const CHARS = [
+ {n:'Satoru Gojo', of:'jujutsu-kaisen'}, {n:'Yuji Itadori', of:'jujutsu-kaisen'}, {n:'Megumi Fushiguro', of:'jujutsu-kaisen'}, {n:'Yuta Okkotsu', of:'jujutsu-kaisen-0'},
+ {n:'Denji', of:'chainsaw-man'}, {n:'Makima', of:'chainsaw-man'}, {n:'Senku Ishigami', of:'dr-stone'}, {n:'Thorfinn', of:'vinland-saga'},
+ {n:'Frieren', of:'frieren'}, {n:'Sung Jinwoo', of:'solo-leveling'}, {n:'Tanjiro Kamado', of:'demon-slayer'}, {n:'Gabimaru', of:'hells-paradise'},
+ {n:'Ken Kaneki', of:'tokyo-ghoul'}, {n:'Eren Yeager', of:'attack-on-titan'}, {n:'Monkey D. Luffy', of:'one-piece'}, {n:'Anya Forger', of:'spy-x-family'},
+];
+const EP = {
+ 'jujutsu-kaisen|1|1': {n:'Ryomen Sukuna', date:'03/10/2020', d:'Yuji Itadori tem força fora do comum e vive para cuidar do avô. Quando o clube de ocultismo mexe com um objeto amaldiçoado, as maldições aparecem na escola.'},
+ 'jujutsu-kaisen|1|2': {n:'Por mim mesmo', date:'10/10/2020', d:'Depois de engolir o dedo de Sukuna, Yuji é condenado à morte pelos feiticeiros. Gojo propõe adiar a execução até que ele consuma todos os dedos.'},
+ 'jujutsu-kaisen|1|3': {n:'Garota de aço', date:'17/10/2020', d:'Yuji chega à escola de jujutsu de Tóquio e conhece Nobara Kugisaki durante uma missão de teste num prédio abandonado.'},
+ 'jujutsu-kaisen|1|4': {n:'Morte ao feto amaldiçoado', date:'24/10/2020', d:'Os três calouros são enviados a um centro de detenção onde um útero amaldiçoado está prestes a eclodir, e a missão sai do controle.'},
+ 'jujutsu-kaisen|1|5': {n:'Morte ao feto amaldiçoado – Parte 2', date:'31/10/2020', d:'Com os colegas em perigo, Yuji enfrenta uma maldição de grau especial, e Sukuna vê ali a chance de tomar o controle do corpo.'},
+ 'vinland-saga|1|2': {n:'Espada', date:'14/07/2019', d:'Ainda criança, Thorfinn vê o pai partir para uma última batalha e descobre o preço da vida de guerreiro.'},
+ 'bungo-stray-dogs|1|1': {n:'A sorte é imprevisível e mutável', date:'07/04/2016', d:'Expulso do orfanato e sem rumo, Atsushi cruza o caminho de um detetive excêntrico que procura um tigre que anda aterrorizando a cidade.'},
+ 'mob-psycho-100|1|1': {n:'Médium autoproclamado: Reigen Arataka', date:'11/07/2016', d:'Mob tem poderes psíquicos enormes, mas prefere uma vida comum. Enquanto isso, trabalha para um mentor que finge ser médium.'},
+ 'my-hero-academia|1|1': {n:'Izuku Midoriya: Origem', date:'03/04/2016', d:'Num mundo em que quase todos nascem com superpoderes, Izuku não tem nenhum, mas não desiste de virar herói.'},
+ 'frieren|1|8': {n:'Frieren, a Exterminadora', date:'27/10/2023', d:'Frieren e Fern chegam a uma vila ameaçada por demônios que falam, e a maga explica por que nunca confia nas palavras deles.'},
+};
+const epInfo = (id, s, e) => EP[`${id}|${s}|${e}`] || { n:`Episódio ${e}`, date:null, d:byId[id].syn };
+const SUBS = {
+ 'Português (Brasil)': ['— Ei, você ouviu isso?','— Fica atrás de mim. Agora.','— Se a gente correr, ainda dá tempo.','— Eu não vou deixar ninguém para trás.','— Então é isso que você chama de plano?','— Confia em mim só mais uma vez.'],
+ 'English': ['— Hey, did you hear that?','— Stay behind me. Now.','— If we run, we can still make it.','— I won’t leave anyone behind.','— So that’s what you call a plan?','— Trust me just one more time.'],
+};
+
+/* =========================================================
+   Estado persistente (localStorage)
+   ========================================================= */
+const KEY = 'cr-redesign-prototipo-v2';
+const defaults = () => ({ onboarded:false, prefs:{ genres:[], themes:[], studios:[], sub:'Português (Brasil)', dub:'Áudio original (JP)', autoSkip:true, autoplay:true, birth:null, max:'A18', quality:'Auto', speed:1 }, picks:[], list:[], prog:{}, recent:[] });
+let S = load();
+function load(){ try{ const raw = localStorage.getItem(KEY); if (raw){ const p = JSON.parse(raw); const d = defaults(); return { ...d, ...p, prefs:{ ...d.prefs, ...(p.prefs||{}) } }; } }catch(e){} return defaults(); }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+
+/* =========================================================
+   Utilitários
+   ========================================================= */
+const $ = (s, el=document) => el.querySelector(s);
+const $$ = (s, el=document) => [...el.querySelectorAll(s)];
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm = s => String(s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+const reduceMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const fmt = s => { s = Math.max(0, Math.floor(s)); return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; };
+const allowed = t => RATINGS.indexOf(t.r) <= RATINGS.indexOf(S.prefs.max);
+const meta = t => t.dub.includes('Português') ? 'Leg | Dub' : 'Legendado';
+const epTitle = (id, s, e) => epInfo(id, s, e).n;
+function ratingFor(b){ if (!b) return 'A18'; const now = new Date(); let age = now.getFullYear() - b.y; if (now.getMonth()+1 < b.m || (now.getMonth()+1 === b.m && now.getDate() < b.d)) age--; return age>=18?'A18':age>=16?'A16':age>=14?'A14':age>=12?'A12':age>=10?'A10':'L'; }
+function ago(ts){ const m = Math.round((Date.now()-ts)/6e4); if (m < 1) return 'agora'; if (m < 60) return `há ${m} min`; const h = Math.round(m/60); if (h < 24) return `há ${h} h`; const d = Math.round(h/24); return d === 1 ? 'ontem' : `há ${d} dias`; }
+
+const IC = {
+  play:'<svg class="i" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5l13 7.5-13 7.5z"/></svg>',
+  pause:'<svg class="i" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" rx="1"/><rect x="14" y="4" width="4" height="16" rx="1"/></svg>',
+  bm:'<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 3h12v18l-6-4.5L6 21z"/></svg>',
+  bmFill:'<svg class="i" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 3h12v18l-6-4.5L6 21z"/></svg>',
+  left:'<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>',
+  right:'<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg>',
+  down:'<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 4l4 4 4-4"/></svg>',
+  x:'<svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 2l8 8M10 2l-8 8"/></svg>',
+  check:'<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7.5l3.5 3.5L12 3.5"/></svg>',
+  vol:'<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>',
+  mute:'<svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path d="M17 9l5 6M22 9l-5 6"/></svg>',
+};
+
+/* Imagens: o HTML procura os arquivos na pasta "imagens/" ao lado dele.
+   Se um arquivo não existir, tenta o próximo da lista e, no fim, mantém o placeholder de cor. */
+const IMG_DIR = 'imagens/';
+function artFb(img){ const fb = (img.dataset.fb || '').split('|').filter(Boolean); if (fb.length){ img.dataset.fb = fb.slice(1).join('|'); img.src = fb[0]; } else img.remove(); }
+function imgTag(srcs){ if (!srcs.length) return ''; return `<img class="art-img" src="${IMG_DIR}${srcs[0]}" data-fb="${srcs.slice(1).map(x => IMG_DIR + x).join('|')}" alt="" loading="lazy" decoding="async" onload="this.parentNode.classList.add('has-img')" onerror="artFb(this)">`; }
+function art(t, kind='poster', extra='', srcs){
+  const list = srcs || (kind === 'poster' ? [`poster-${t.id}.jpg`] : kind === 'key' ? [`key-${t.id}.jpg`, `poster-${t.id}.jpg`] : []);
+  return `<div class="art art-${kind}" style="--h:${t.h}" aria-hidden="true">${imgTag(list)}${extra}<span class="art-glyph">${esc(t.t[0])}</span><span class="art-title">${esc(t.t)}</span></div>`;
+}
+function thumb(t, s, e, animeFallback){ return art(t, 'thumb', `<span class="art-ep">E${e}</span>`, [`ep-${t.id}-${s}-${e}.jpg`, ...(animeFallback ? [`thumb-${t.id}.jpg`] : [])]); }
+const CAL = '<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M1 3h12v10H1zM1 6h12M4 1v3M10 1v3"/></svg>';
+const PLAY_O = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M2 1.5l12 6.5-12 6.5z"/></svg>';
+/* Card de episódio: usado em "Continuar assistindo" e na lista de episódios */
+function epTile(t, s, e, o){
+  const info = epInfo(t.id, s, e);
+  return `<article class="ept ${o.current ? 'is-current' : ''}">
+    <button class="ept-link" data-action="play" data-id="${t.id}" data-s="${s}" data-e="${e}" aria-label="${esc(o.cta)}: ${esc(t.t)}, ${esc(o.label)}. ${esc(o.meta)}">
+      <span class="ept-thumb">${thumb(t, s, e, o.animeFallback)}<span class="badge">${t.r}</span>${o.rest ? `<span class="ept-rest">${esc(o.rest)}</span>` : ''}<span class="bar"><i style="width:${o.pct.toFixed(1)}%"></i></span></span>
+      <span class="ept-anime">${esc(t.t)}</span>
+      <span class="ept-title">${esc(o.label)}</span>
+      <span class="ept-meta">${esc(o.meta)}</span>
+      <span class="ept-hover" aria-hidden="true">
+        <span class="ept-anime">${esc(t.t)}</span>
+        <span class="ept-h-title">${esc(o.label)}</span>
+        <span class="ept-h-info"><span class="badge">${t.r}</span>${info.date ? `${CAL}${info.date}` : ''}</span>
+        <span class="ept-h-desc">${esc(info.d)}</span>
+        <span class="ept-h-cta">${PLAY_O}${esc(o.cta)}</span>
+      </span>
+    </button>
+  </article>`;
+}
+
+/* =========================================================
+   Recomendação
+   ========================================================= */
+function score(t, prefs=S.prefs, picks=S.picks){
+  let s = 0;
+  t.g.forEach(x => { if (prefs.genres.includes(x)) s += 3; });
+  t.th.forEach(x => { if (prefs.themes.includes(x)) s += 2; });
+  if (prefs.studios.includes(t.st)) s += 2;
+  picks.forEach(id => { const o = byId[id]; if (o && o.id !== t.id){ s += o.g.filter(x => t.g.includes(x)).length; if (o.st === t.st) s += 1; } });
+  return s + t.pop/100;
+}
+const recs = () => T.filter(allowed).sort((a,b) => score(b) - score(a));
+function reasonFor(t){
+  const g = t.g.filter(x => S.prefs.genres.includes(x)); const st = S.prefs.studios.includes(t.st) ? t.st : null;
+  const parts = [...g.slice(0,2), st].filter(Boolean);
+  return parts.length ? `Porque você curte ${parts.join(' e ').replace(/ e (?=[^e]* e )/, ', ')}` : '';
+}
+function continueList(){
+  return Object.entries(S.prog).filter(([id]) => byId[id] && allowed(byId[id])).map(([id,p]) => ({t:byId[id], p})).sort((a,b) => b.p.at - a.p.at);
+}
+function similar(t){ return T.filter(o => o.id !== t.id && allowed(o)).map(o => ({o, s: o.g.filter(x => t.g.includes(x)).length*2 + (o.st===t.st?2:0) + o.pop/100})).sort((a,b) => b.s - a.s).map(x => x.o); }
+
+/* =========================================================
+   Componentes de UI
+   ========================================================= */
+function posterCard(t, opts={}){
+  const saved = S.list.includes(t.id);
+  return `<article class="pcard" data-id="${t.id}">
+    <a class="pcard-link" href="#titulo-${t.id}" aria-label="${esc(t.t)}">${art(t)}
+      <span class="pcard-info" aria-hidden="true"><span><span class="badge">${t.r}</span></span><span class="tags">${esc(t.g.slice(0,3).join(', '))}</span><p>${esc(t.syn)}</p></span>
+    </a>
+    <button class="pcard-save" data-action="toggle-list" data-id="${t.id}" aria-pressed="${saved}" aria-label="${saved ? 'Remover de Minha lista' : 'Salvar em Minha lista'}">${saved ? IC.bmFill : IC.bm}</button>
+    <h3 class="pcard-title">${esc(t.t)}</h3>
+    <p class="pcard-meta">${opts.meta || meta(t)}</p>
+    ${opts.reason ? `<p class="pcard-reason">${esc(opts.reason)}</p>` : ''}
+  </article>`;
+}
+function cwCard({t,p}){
+  const rem = Math.max(1, Math.round((EP_LEN - p.t)/60));
+  return epTile(t, p.s, p.e, { label:`T${p.s} E${p.e} · ${epTitle(t.id,p.s,p.e)}`, meta:`Assistido ${ago(p.at)}`, rest:`${rem}m restantes`, pct:p.t/EP_LEN*100, cta:`Continuar E${p.e}`, animeFallback:true });
+}
+function rowTrack(items, kind, label){
+  return `<div class="row-wrap">
+      <button class="row-btn prev" data-action="row-scroll" data-dir="-1" aria-label="Ver anteriores" hidden><span>${IC.left}</span></button>
+      <div class="row-track ${kind}" tabindex="0" role="group" aria-label="${esc(label)}">${items.join('')}</div>
+      <button class="row-btn next" data-action="row-scroll" data-dir="1" aria-label="Ver próximos"><span>${IC.right}</span></button>
+    </div>`;
+}
+function row(title, items, kind='poster', id='r'){
+  if (!items.length) return '';
+  return `<section class="row" aria-labelledby="h-${id}">
+    <div class="row-head"><h2 id="h-${id}">${esc(title)}</h2><a class="link" href="#busca">Ver tudo</a></div>
+    <div class="row-wrap">
+      <button class="row-btn prev" data-action="row-scroll" data-dir="-1" aria-label="Ver anteriores" hidden><span>${IC.left}</span></button>
+      <div class="row-track ${kind}" tabindex="0" role="group" aria-label="${esc(title)}">${items.join('')}</div>
+      <button class="row-btn next" data-action="row-scroll" data-dir="1" aria-label="Ver próximos"><span>${IC.right}</span></button>
+    </div>
+  </section>`;
+}
+function wireRows(root=document){
+  $$('.row-track', root).forEach(track => {
+    const wrap = track.parentElement, prev = $('.prev', wrap), next = $('.next', wrap);
+    const sync = () => { prev.hidden = track.scrollLeft < 8; next.hidden = track.scrollLeft + track.clientWidth >= track.scrollWidth - 8; };
+    track.addEventListener('scroll', () => requestAnimationFrame(sync), {passive:true});
+    sync();
+  });
+}
+
+/* =========================================================
+   Toasts
+   ========================================================= */
+function toast(msg, action){
+  const el = document.createElement('div'); el.className = 'toast';
+  el.innerHTML = `<span>${esc(msg)}</span>${action ? `<button type="button">${esc(action.label)}</button>` : ''}`;
+  if (action) el.querySelector('button').addEventListener('click', () => { action.fn(); el.remove(); });
+  $('#toasts').append(el);
+  setTimeout(() => el.remove(), action ? 6000 : 3200);
+}
+
+/* =========================================================
+   Roteamento
+   ========================================================= */
+const app = $('#app');
+let heroTimer = null, heroPaused = false;
+function go(hash){ if (location.hash === hash) route(); else location.hash = hash; }
+function withTransition(fn){ if (!document.startViewTransition || reduceMotion()) { fn(); return; } document.startViewTransition(fn); }
+function route(){
+  stopHero(); closeAccount();
+  let h = location.hash.slice(1);
+  if (!S.onboarded && h !== 'boas-vindas'){ history.replaceState(null, '', '#boas-vindas'); h = 'boas-vindas'; }
+  if (!h) { history.replaceState(null, '', '#inicio'); h = 'inicio'; }
+  if (h !== 'assistir') closePlayer();
+  $('#nav-search').removeAttribute('aria-current'); $('#nav-list').removeAttribute('aria-current');
+  if (h === 'boas-vindas') renderOnboarding();
+  else if (h === 'inicio') renderHome();
+  else if (h === 'busca') { $('#nav-search').setAttribute('aria-current','page'); renderSearch(); }
+  else if (h === 'minha-lista') { $('#nav-list').setAttribute('aria-current','page'); renderList(); }
+  else if (h.startsWith('titulo-') && byId[h.slice(7)]) renderTitle(h.slice(7));
+  else if (h === 'assistir') openPlayer();
+  else { history.replaceState(null, '', '#inicio'); renderHome(); }
+  if (h !== 'assistir') { window.scrollTo(0,0); requestAnimationFrame(() => $('h1', app)?.focus?.({preventScroll:true})); }
+}
+window.addEventListener('hashchange', () => withTransition(route));
+
+/* =========================================================
+   Home
+   ========================================================= */
+function renderHome(){
+  document.body.dataset.view = 'home';
+  const cl = continueList();
+  const slides = [];
+  if (cl[0]) slides.push(cl[0]);
+  recs().filter(t => !S.prog[t.id]).slice(0, 5 - slides.length).forEach(t => slides.push({t}));
+  const last = cl[0]?.t;
+  const listItems = S.list.map(id => byId[id]).filter(t => t && allowed(t));
+  app.innerHTML = `
+    <section class="hero" aria-roledescription="carrossel" aria-label="Destaques">
+      ${slides.map((s,i) => heroSlide(s, i, slides.length)).join('')}
+      <div class="hero-ctrl">
+        <div class="dots" role="group" aria-label="Escolher destaque">${slides.map((s,i) => `<button data-action="hero-go" data-i="${i}" aria-label="Destaque ${i+1}: ${esc(s.t.t)}" ${i===0?'aria-current="true"':''}><i></i></button>`).join('')}</div>
+        <button class="hero-pause" data-action="hero-pause" aria-label="Pausar destaques">${IC.pause}</button>
+      </div>
+    </section>
+    <div class="page">
+      ${row('Continuar assistindo', cl.map(cwCard), 'wide', 'cw')}
+      ${row('Minha lista', listItems.map(t => posterCard(t)), 'poster', 'ml')}
+      ${row('Animes em alta no Brasil', T.filter(allowed).sort((a,b) => b.pop - a.pop).slice(0,14).map(t => posterCard(t)), 'poster', 'alta')}
+      ${row('Recomendados pra você', recs().filter(t => !S.prog[t.id]).slice(0,14).map(t => posterCard(t, {reason: reasonFor(t)})), 'poster', 'rec')}
+      ${last ? row(`Pra quem gostou de ${last.t}`, similar(last).slice(0,14).map(t => posterCard(t)), 'poster', 'sim') : ''}
+      ${row('Simulcasts da temporada', T.filter(t => allowed(t) && t.status === 'Em exibição' && t.type === 'Série').sort((a,b) => b.y - a.y).slice(0,14).map(t => posterCard(t, {meta: `${meta(t)} · Novo episódio toda semana`})), 'poster', 'sim2')}
+    </div>`;
+  wireRows();
+  heroIndex = 0; startHero();
+}
+function heroSlide({t,p}, i, n){
+  const resume = p ? `<p class="hero-resume">Você parou em T${p.s} E${p.e} · ${esc(epTitle(t.id,p.s,p.e))}, faltam ${Math.round((EP_LEN-p.t)/60)} min<span class="bar"><i style="width:${(p.t/EP_LEN*100).toFixed(1)}%"></i></span></p>` : (reasonFor(t) ? `<p class="hero-reason">${esc(reasonFor(t))}</p>` : '');
+  const saved = S.list.includes(t.id);
+  return `<div class="hero-slide ${i===0?'is-active':''}" role="group" aria-roledescription="destaque" aria-label="${i+1} de ${n}" ${i?'inert':''}>
+    ${art(t,'key')}<div class="hero-shade"></div>
+    <div class="hero-info">
+      <span><span class="badge">${t.r}</span></span>
+      ${i===0 ? `<h1 tabindex="-1">${esc(t.t)}</h1>` : `<h2 class="h1like" style="margin:0;font-size:clamp(34px,5vw,56px);line-height:1;letter-spacing:-.03em;color:#fff;font-weight:800">${esc(t.t)}</h2>`}
+      <p class="hero-meta">${meta(t)} · ${esc(t.g.join(', '))}</p>
+      <p class="hero-syn">${esc(t.syn)}</p>
+      ${resume}
+      <div class="hero-actions">
+        <button class="btn btn-primary" data-action="play" data-id="${t.id}" ${p?`data-s="${p.s}" data-e="${p.e}"`:''}>${IC.play}${p ? `Continuar T${p.s} E${p.e}` : 'Começar a assistir E1'}</button>
+        <button class="icon-btn" data-action="toggle-list" data-id="${t.id}" aria-pressed="${saved}" aria-label="${saved?'Remover de Minha lista':'Salvar em Minha lista'}">${saved?IC.bmFill:IC.bm}</button>
+        <a class="btn btn-ghost" href="#titulo-${t.id}">Ver detalhes</a>
+      </div>
+    </div>
+  </div>`;
+}
+let heroIndex = 0;
+function heroShow(i){
+  const slides = $$('.hero-slide'); if (!slides.length) return;
+  heroIndex = (i + slides.length) % slides.length;
+  slides.forEach((s,k) => { s.classList.toggle('is-active', k===heroIndex); s.inert = k !== heroIndex; });
+  $$('.dots button').forEach((d,k) => d.setAttribute('aria-current', k===heroIndex ? 'true' : 'false'));
+}
+function startHero(){ stopHero(); if (heroPaused || reduceMotion()) { syncHeroPause(); return; } heroTimer = setInterval(() => heroShow(heroIndex+1), 7000); syncHeroPause(); }
+function stopHero(){ clearInterval(heroTimer); heroTimer = null; }
+function syncHeroPause(){ const b = $('.hero-pause'); if (!b) return; const running = !!heroTimer; b.innerHTML = running ? IC.pause : IC.play; b.setAttribute('aria-label', running ? 'Pausar destaques' : 'Retomar destaques'); }
+
+/* =========================================================
+   Página do título
+   ========================================================= */
+const seasonSel = {};
+function renderTitle(id){
+  document.body.dataset.view = 'title';
+  const t = byId[id], p = S.prog[id];
+  const s = seasonSel[id] || p?.s || 1; seasonSel[id] = s;
+  const saved = S.list.includes(id);
+  const count = t.seasons[s-1];
+  const shown = Math.min(count, 24);
+  const eps = Array.from({length: shown}, (_,i) => i+1);
+  app.innerHTML = `
+    <section class="tp-hero">${art(t,'key')}<div class="hero-shade"></div>
+      <div class="tp-info">
+        <span><span class="badge">${t.r}</span></span>
+        <h1 tabindex="-1">${esc(t.t)}</h1>
+        <p class="hero-meta">${meta(t)} · ${t.type === 'Filme' ? `Filme · ${t.y}` : `${t.seasons.length} temporada${t.seasons.length>1?'s':''} · ${t.seasons.reduce((a,b)=>a+b,0)} episódios`} · ${esc(t.st)}</p>
+        <div class="chips">${t.g.map(g => `<button class="chip" data-action="genre-search" data-g="${esc(g)}">${esc(g)}</button>`).join('')}</div>
+        <p class="hero-syn" style="-webkit-line-clamp:4">${esc(t.syn)}</p>
+        ${p ? `<p class="hero-resume">Você parou em T${p.s} E${p.e} · ${esc(epTitle(id,p.s,p.e))}<span class="bar"><i style="width:${(p.t/EP_LEN*100).toFixed(1)}%"></i></span></p>` : ''}
+        <div class="hero-actions">
+          <button class="btn btn-primary" data-action="play" data-id="${id}" ${p?`data-s="${p.s}" data-e="${p.e}"`:''}>${IC.play}${p ? `Continuar T${p.s} E${p.e}` : (t.type==='Filme' ? 'Assistir filme' : 'Começar a assistir E1')}</button>
+          <button class="icon-btn" data-action="toggle-list" data-id="${id}" aria-pressed="${saved}" aria-label="${saved?'Remover de Minha lista':'Salvar em Minha lista'}">${saved?IC.bmFill:IC.bm}</button>
+        </div>
+      </div>
+    </section>
+    <div class="page">
+      ${t.type === 'Filme' ? '' : `
+      <section class="row" style="margin-top:8px" aria-labelledby="h-eps">
+        <div class="row-head"><h2 id="h-eps">Temporada ${s} · Episódios</h2><span style="color:var(--muted);font-size:13px">${count} episódios${count>shown?` · mostrando ${shown}`:''}</span></div>
+        ${t.seasons.length > 1 ? `<div class="season-tabs" role="group" aria-label="Temporadas">${t.seasons.map((_,i) => `<button class="chip ${i+1===s?'is-active':''}" data-action="season" data-id="${id}" data-s="${i+1}" aria-pressed="${i+1===s}">Temporada ${i+1}</button>`).join('')}</div>` : ''}
+        ${rowTrack(eps.map(e => epCard(t, s, e, p)), 'wide', `Episódios da temporada ${s}`)}
+      </section>`}
+      ${row(`Pra quem gostou de ${t.t}`, similar(t).slice(0,14).map(o => posterCard(o)), 'poster', 'tp-sim')}
+    </div>`;
+  wireRows();
+  const cur = $('.ept.is-current', app);
+  if (cur){ const tr = cur.closest('.row-track'); tr.style.scrollBehavior = 'auto'; tr.scrollLeft = Math.max(0, cur.offsetLeft - tr.offsetLeft - 16); tr.style.scrollBehavior = ''; tr.dispatchEvent(new Event('scroll')); }
+}
+function epCard(t, s, e, p){
+  const done = p?.done?.includes(`${s}-${e}`), cur = !!(p && p.s===s && p.e===e);
+  const rem = cur ? Math.max(1, Math.round((EP_LEN-p.t)/60)) : 24;
+  return epTile(t, s, e, {
+    current: cur,
+    label: `E${e} · ${epTitle(t.id,s,e)}`,
+    meta: cur ? 'Em andamento' : done ? 'Assistido' : 'Não assistido',
+    rest: cur ? `${rem}m restantes` : done ? 'Assistido' : '24m',
+    pct: cur ? p.t/EP_LEN*100 : done ? 100 : 0,
+    cta: cur ? `Continuar E${e}` : done ? 'Assistir de novo' : `Assistir E${e}`,
+  });
+}
+
+/* =========================================================
+   Minha lista
+   ========================================================= */
+function renderList(){
+  document.body.dataset.view = 'list';
+  const items = S.list.map(id => byId[id]).filter(t => t && allowed(t));
+  app.innerHTML = `<div class="page" style="padding-top:40px">
+    <h1 tabindex="-1" style="color:#fff;font-size:32px;letter-spacing:-.02em;margin:0 0 8px">Minha lista</h1>
+    <p style="color:var(--muted);margin:0 0 28px">${items.length} título${items.length===1?'':'s'} salvo${items.length===1?'':'s'}</p>
+    ${items.length ? `<div class="grid">${items.map(t => posterCard(t)).join('')}</div>` : `<div class="empty"><h2>Sua lista está vazia</h2><p>Salve títulos com o marcador para encontrá-los aqui depois.</p><a class="btn btn-primary" href="#busca">Explorar títulos</a></div>`}
+  </div>`;
+}
+
+/* =========================================================
+   Busca + filtros
+   ========================================================= */
+const FILTERS = [
+  {k:'idioma', label:'Idioma', opts:['Legendado','Dublado']},
+  {k:'genero', label:'Gênero', opts:GENRES, search:true},
+  {k:'midia', label:'Mídia', opts:['Série','Filme']},
+  {k:'ano', label:'Ano', opts:['2020 em diante','2010–2019','2000–2009','Antes de 2000']},
+  {k:'status', label:'Status', opts:['Em exibição','Finalizado']},
+  {k:'dublagem', label:'Dublagem', opts:['Português','Inglês','Espanhol']},
+  {k:'classificacao', label:'Classificação', opts:RATINGS},
+  {k:'estudio', label:'Estúdio', opts:[...new Set(T.map(t => t.st))].sort(), hidden:true},
+];
+const SORTS = {relevancia:'Relevância', popularidade:'Popularidade', recentes:'Mais recentes', az:'A–Z'};
+const SR = { q:'', f:Object.fromEntries(FILTERS.map(f => [f.k, []])), sort:'relevancia', open:null, draft:null, acI:-1, acOpen:false };
+function yearBucket(y){ return y >= 2020 ? '2020 em diante' : y >= 2010 ? '2010–2019' : y >= 2000 ? '2000–2009' : 'Antes de 2000'; }
+function hasOpt(t, k, o){
+  switch(k){
+    case 'idioma': return o === 'Legendado' ? true : t.dub.length > 0;
+    case 'genero': return t.g.includes(o);
+    case 'midia': return t.type === o;
+    case 'ano': return yearBucket(t.y) === o;
+    case 'status': return t.status === o;
+    case 'dublagem': return t.dub.includes(o);
+    case 'classificacao': return t.r === o;
+    case 'estudio': return t.st === o;
+  }
+  return true;
+}
+function passFilters(t, except){
+  return FILTERS.every(({k}) => { if (k === except) return true; const sel = SR.f[k]; if (!sel.length) return true; return k === 'genero' ? sel.every(o => hasOpt(t,k,o)) : sel.some(o => hasOpt(t,k,o)); });
+}
+function queryMatches(){
+  const q = norm(SR.q.trim()); const list = T.filter(allowed);
+  if (!q) return list.map(t => ({t, reason:'', rank:0}));
+  const out = [];
+  for (const t of list){
+    const nt = norm(t.t);
+    if (nt.startsWith(q)) { out.push({t, reason:'', rank:3}); continue; }
+    if (nt.includes(q)) { out.push({t, reason:'', rank:2}); continue; }
+    const ch = CHARS.find(c => c.of === t.id && norm(c.n).includes(q));
+    if (ch) { out.push({t, reason:`Personagem: ${ch.n}`, rank:2}); continue; }
+    if (norm(t.st).includes(q)) { out.push({t, reason:`Estúdio: ${t.st}`, rank:1}); continue; }
+    const g = t.g.find(x => norm(x).includes(q)); if (g) { out.push({t, reason:`Gênero: ${g}`, rank:1}); continue; }
+    if (q.length > 2 && norm(t.syn).includes(q)) out.push({t, reason:'Encontrado na sinopse', rank:0});
+  }
+  return out;
+}
+function sortList(arr){
+  const a = [...arr];
+  if (SR.sort === 'popularidade') a.sort((x,y) => y.t.pop - x.t.pop);
+  else if (SR.sort === 'recentes') a.sort((x,y) => y.t.y - x.t.y);
+  else if (SR.sort === 'az') a.sort((x,y) => x.t.t.localeCompare(y.t.t, 'pt'));
+  else a.sort((x,y) => (y.rank - x.rank) || (y.t.pop - x.t.pop));
+  return a;
+}
+function activeCount(){ return FILTERS.reduce((n,f) => n + SR.f[f.k].length, 0); }
+
+function renderSearch(){
+  document.body.dataset.view = 'search';
+  app.innerHTML = `
+    <div class="search-top">
+      <div class="search-box">
+        <label class="vh" for="q">Buscar animes, personagens ou estúdios</label>
+        <input id="q" type="search" autocomplete="off" placeholder="Buscar animes, personagens, estúdios…" value="${esc(SR.q)}" role="combobox" aria-expanded="false" aria-controls="ac" aria-autocomplete="list">
+        <button class="search-clear" data-action="q-clear" aria-label="Limpar busca" ${SR.q?'':'hidden'}><svg width="14" height="14" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 2l8 8M10 2l-8 8"/></svg></button>
+        <ul class="ac" id="ac" role="listbox" hidden></ul>
+      </div>
+    </div>
+    <div class="filters" id="filters"></div>
+    <div class="applied" id="applied" hidden></div>
+    <div class="page" id="results"></div>
+    <h1 class="vh" tabindex="-1">Busca</h1>`;
+  const q = $('#q');
+  q.addEventListener('input', () => { SR.q = q.value; SR.acI = -1; $('.search-clear').hidden = !SR.q; renderAC(true); renderResults(); });
+  q.addEventListener('focus', () => renderAC(true));
+  q.addEventListener('keydown', onSearchKey);
+  renderFilters(); renderResults();
+  setTimeout(() => q.focus({preventScroll:true}), 30);
+}
+function acItems(){
+  const q = norm(SR.q.trim()); if (!q) return [];
+  const items = [];
+  T.filter(allowed).filter(t => norm(t.t).includes(q)).sort((a,b) => (norm(b.t).startsWith(q) - norm(a.t).startsWith(q)) || b.pop - a.pop).slice(0,4)
+    .forEach(t => items.push({kind: t.type === 'Filme' ? 'Filme' : 'Anime', name:t.t, sub: t.type==='Filme' ? `Filme · ${t.y}` : `Anime · ${t.seasons.length} temporada${t.seasons.length>1?'s':''}`, t, go:`#titulo-${t.id}`}));
+  CHARS.filter(c => norm(c.n).includes(q) && allowed(byId[c.of])).slice(0,2).forEach(c => items.push({kind:'Personagem', name:c.n, sub:`Personagem em ${byId[c.of].t}`, round:c.n, go:`#titulo-${c.of}`}));
+  [...new Set(T.map(t => t.st))].filter(s => norm(s).includes(q)).slice(0,1).forEach(s => items.push({kind:'Estúdio', name:s, sub:`Estúdio de ${T.filter(t => t.st===s).slice(0,2).map(t=>t.t).join(', ')}`, round:s, studio:s}));
+  return items.slice(0,7);
+}
+function hl(name){ const q = SR.q.trim(); const i = norm(name).indexOf(norm(q)); if (!q || i < 0) return esc(name); return esc(name.slice(0,i)) + '<mark>' + esc(name.slice(i, i+q.length)) + '</mark>' + esc(name.slice(i+q.length)); }
+function renderAC(show){
+  const ac = $('#ac'), q = $('#q'); if (!ac) return;
+  const items = acItems(); SR.acList = items;
+  const open = show && items.length > 0 && document.activeElement === q;
+  ac.hidden = !open; q.setAttribute('aria-expanded', open);
+  if (!open) { q.removeAttribute('aria-activedescendant'); return; }
+  ac.innerHTML = items.map((it,i) => `<li role="option" id="ac-${i}" data-ac="${i}" aria-selected="${i===SR.acI}">
+      ${it.t ? `<span class="thumb">${art(it.t)}</span>` : `<span class="round" aria-hidden="true">${esc(it.round.split(' ').map(w=>w[0]).join('').slice(0,2))}</span>`}
+      <span class="txt"><span class="name">${hl(it.name)}</span><br><span class="sub">${esc(it.sub)}</span></span>
+      <span class="kind">${it.kind}</span></li>`).join('') + `<li class="ac-hint" role="presentation" aria-hidden="true">Enter para ver todos os resultados · ↑↓ para navegar</li>`;
+  if (SR.acI >= 0) q.setAttribute('aria-activedescendant', `ac-${SR.acI}`); else q.removeAttribute('aria-activedescendant');
+}
+function pickAC(i){
+  const it = SR.acList?.[i]; if (!it) return;
+  commitRecent(it.name);
+  if (it.studio){ SR.f.estudio = [it.studio]; SR.q = ''; $('#q').value = ''; $('.search-clear').hidden = true; $('#ac').hidden = true; renderFilters(); renderResults(); toast(`Filtrando pelo estúdio ${it.studio}`); return; }
+  go(it.go);
+}
+function onSearchKey(e){
+  const n = SR.acList?.length || 0;
+  if (e.key === 'ArrowDown' && n){ e.preventDefault(); SR.acI = (SR.acI + 1) % n; renderAC(true); }
+  else if (e.key === 'ArrowUp' && n){ e.preventDefault(); SR.acI = (SR.acI - 1 + n) % n; renderAC(true); }
+  else if (e.key === 'Enter'){ e.preventDefault(); if (SR.acI >= 0) pickAC(SR.acI); else { commitRecent(SR.q); $('#ac').hidden = true; $('#q').setAttribute('aria-expanded','false'); } }
+  else if (e.key === 'Escape'){ if (!$('#ac').hidden) e.preventDefault(); $('#ac').hidden = true; $('#q').setAttribute('aria-expanded','false'); }
+}
+function commitRecent(v){ v = (v||'').trim(); if (!v) return; S.recent = [v, ...S.recent.filter(x => norm(x) !== norm(v))].slice(0,6); save(); }
+
+function renderFilters(){
+  const el = $('#filters'); if (!el) return;
+  el.innerHTML = FILTERS.filter(f => !f.hidden).map(f => { const n = SR.f[f.k].length; return `<button class="chip ${n?'is-active':''}" data-action="f-open" data-k="${f.k}" aria-expanded="${SR.open===f.k}" aria-haspopup="true">${f.label}${n?` · ${n}`:''}${IC.down}</button>`; }).join('')
+    + `<span class="spacer"></span><button class="chip ${SR.open==='sort'?'is-active':''}" data-action="f-open" data-k="sort" aria-expanded="${SR.open==='sort'}" aria-haspopup="true">Ordenar: ${SORTS[SR.sort]}${IC.down}</button>`
+    + (SR.open ? panelHTML() : '');
+  if (SR.open){
+    const btn = $(`[data-k="${SR.open}"]`, el), panel = $('.fpanel', el);
+    const x = Math.min(btn.offsetLeft, el.clientWidth - panel.offsetWidth - 8);
+    panel.style.left = Math.max(8, x) + 'px'; panel.style.top = (btn.offsetTop + btn.offsetHeight + 8) + 'px';
+    const fs = $('input[type="search"]', panel); fs?.addEventListener('input', () => { const v = norm(fs.value); $$('.opt', panel).forEach(o => o.hidden = !norm(o.dataset.v).includes(v)); });
+    ($('input', panel))?.focus({preventScroll:true});
+  }
+  const ap = $('#applied');
+  const chips = FILTERS.flatMap(f => SR.f[f.k].map(o => ({f, o})));
+  ap.hidden = !chips.length;
+  ap.innerHTML = chips.length ? `<span>Filtros aplicados:</span>${chips.map(({f,o}) => `<button class="chip" data-action="f-remove" data-k="${f.k}" data-o="${esc(o)}" aria-label="Remover filtro ${esc(f.label)}: ${esc(o)}">${f.k==='estudio'?'Estúdio: ':''}${esc(o)}${IC.x}</button>`).join('')}<button class="link" data-action="f-clear" style="margin-left:6px">Limpar filtros</button>` : '';
+}
+function panelHTML(){
+  if (SR.open === 'sort') return `<div class="fpanel" role="dialog" aria-label="Ordenar resultados"><div class="opts">${Object.entries(SORTS).map(([k,v]) => `<label class="opt"><input type="radio" name="sort" value="${k}" ${SR.sort===k?'checked':''} data-action="sort-pick"> ${v}</label>`).join('')}</div></div>`;
+  const f = FILTERS.find(x => x.k === SR.open); const base = queryMatches().filter(({t}) => passFilters(t, f.k));
+  return `<div class="fpanel" role="dialog" aria-label="Filtrar por ${f.label}">
+    ${f.search ? `<input type="search" placeholder="Buscar ${f.label.toLowerCase()}" aria-label="Buscar ${f.label.toLowerCase()}">` : ''}
+    <div class="opts">${f.opts.map(o => `<label class="opt" data-v="${esc(o)}"><input type="checkbox" value="${esc(o)}" ${SR.draft.includes(o)?'checked':''} data-action="f-toggle"> ${esc(o)}<span class="count">${base.filter(({t}) => hasOpt(t, f.k, o)).length}</span></label>`).join('')}</div>
+    <footer><button class="btn btn-ghost" data-action="f-panel-clear">Limpar</button><button class="btn btn-primary" data-action="f-apply">Aplicar</button></footer>
+  </div>`;
+}
+function renderResults(){
+  const el = $('#results'); if (!el) return;
+  const q = SR.q.trim(); const nf = activeCount();
+  if (!q && !nf){
+    const sug = recs().slice(0,12);
+    el.innerHTML = `
+      ${S.recent.length ? `<section class="row"><div class="row-head"><h2>Buscas recentes</h2><button class="link" data-action="recent-clear">Limpar recentes</button></div><div class="chips">${S.recent.map(r => `<button class="chip" data-action="recent" data-v="${esc(r)}">${esc(r)}</button>`).join('')}</div></section>` : ''}
+      <section class="row"><div class="row-head"><h2>Explorar por gênero</h2></div><div class="chips">${GENRES.map(g => `<button class="chip" data-action="genre-filter" data-g="${esc(g)}">${esc(g)}</button>`).join('')}</div></section>
+      <section class="row"><div class="row-head"><h2>Sugestões pra você</h2></div><div class="grid">${sug.map(t => posterCard(t, {reason: reasonFor(t)})).join('')}</div></section>`;
+    return;
+  }
+  const matched = sortList(queryMatches().filter(({t}) => passFilters(t)));
+  const ids = new Set(matched.map(m => m.t.id));
+  let related = [];
+  if (q && matched.length){ const seed = matched.slice(0,3).map(m => m.t); related = T.filter(t => allowed(t) && !ids.has(t.id) && passFilters(t) && seed.some(s => s.g.some(g => t.g.includes(g)))).sort((a,b) => score(b) - score(a)).slice(0,12); }
+  const filterNote = nf ? ` · ${nf} filtro${nf>1?'s':''}` : '';
+  const head = q ? `${matched.length} resultado${matched.length===1?'':'s'} para “${esc(q)}”${filterNote}` : `${matched.length} título${matched.length===1?'':'s'}${filterNote}`;
+  if (!matched.length){
+    el.innerHTML = `<h2 class="results-head">${head}</h2><div class="empty"><h2>Nenhum título encontrado</h2><p>${q ? 'Confira a grafia ou busque por personagem, estúdio ou gênero.' : ''}${nf ? ' Remova um filtro para ampliar os resultados.' : ''}</p>${nf ? '<button class="btn btn-outline" data-action="f-clear">Limpar filtros</button>' : ''}</div>`;
+    return;
+  }
+  const relTitle = nf ? `Relacionados · ${FILTERS.flatMap(f => SR.f[f.k]).slice(0,2).join(' e ')}` : `Relacionados a ${matched[0].t.t}`;
+  el.innerHTML = `<h2 class="results-head">${head}</h2><div class="grid">${matched.map(m => posterCard(m.t, {reason:m.reason})).join('')}</div>
+    ${related.length ? `<h2 class="results-head" style="margin-top:48px">${esc(relTitle)}</h2><div class="grid">${related.map(t => posterCard(t)).join('')}</div>` : ''}`;
+}
+
+/* =========================================================
+   Onboarding
+   ========================================================= */
+const OB = { step:1, genres:new Set(), themes:new Set(), studios:new Set(), sub:'Português (Brasil)', dub:'Áudio original (JP)', autoSkip:true, autoplay:true, d:'', m:'', y:'', picks:new Set() };
+function renderOnboarding(){
+  document.body.dataset.view = 'onboarding';
+  const st = OB.step;
+  const bars = [1,2,3,4].map(i => `<i class="${i<=st?'on':''}"></i>`).join('');
+  let body = '', title = '', lead = '', foot = '';
+  const sel = OB.genres.size + OB.themes.size + OB.studios.size;
+  if (st === 1){
+    title = 'O que você curte?'; lead = 'Escolha pelo menos 3. Isso ajusta suas recomendações desde o primeiro acesso.';
+    const grp = (h, arr, set, k) => `<div class="ob-group"><h2>${h}</h2><div class="bubbles">${arr.map(x => `<button class="bubble" data-action="ob-bubble" data-k="${k}" data-v="${esc(x)}" aria-pressed="${set.has(x)}">${esc(x)}</button>`).join('')}</div></div>`;
+    body = grp('Gêneros', GENRES, OB.genres, 'genres') + grp('Temas', THEMES, OB.themes, 'themes') + grp('Estúdios', STUDIOS, OB.studios, 'studios');
+    foot = `<span class="count" aria-live="polite">${sel} selecionado${sel===1?'':'s'}${sel<3?` · faltam ${3-sel}`:''}</span><button class="btn btn-ghost" data-action="ob-skipstep">Pular essa etapa</button><button class="btn btn-primary" data-action="ob-next" ${sel<3?'disabled':''}>Continuar</button>`;
+  } else if (st === 2){
+    title = 'Como você prefere assistir?'; lead = 'Defina o idioma padrão. Dá pra trocar em qualquer episódio.';
+    const radios = (name, arr, val) => `<fieldset class="radios"><legend class="vh">${name}</legend>${arr.map(x => `<label class="radio"><input type="radio" name="${name}" value="${esc(x)}" ${val===x?'checked':''} data-action="ob-radio">${esc(x)}</label>`).join('')}</fieldset>`;
+    body = `<div class="ob-group"><h2>Idioma da legenda</h2>${radios('sub', SUB_LANGS, OB.sub)}</div>
+      <div class="ob-group"><h2>Idioma da dublagem</h2>${radios('dub', DUB_LANGS, OB.dub)}</div>
+      <div class="ob-group"><h2>Reprodução</h2>
+        <button class="toggle-row" role="switch" aria-checked="${OB.autoSkip}" data-action="ob-switch" data-k="autoSkip"><span><b>Pular abertura e recap automaticamente</b><small>Você ainda pode voltar com um toque durante o episódio</small></span><span class="switch"></span></button>
+        <button class="toggle-row" role="switch" aria-checked="${OB.autoplay}" data-action="ob-switch" data-k="autoplay"><span><b>Reproduzir o próximo episódio automaticamente</b><small>Desative se você gosta de ver os encerramentos</small></span><span class="switch"></span></button>
+      </div>`;
+    foot = `<button class="btn btn-ghost" data-action="ob-back">Voltar</button><button class="btn btn-primary" data-action="ob-next">Continuar</button>`;
+  } else if (st === 3){
+    title = 'Qual a sua data de nascimento?'; lead = 'A classificação indicativa é ajustada automaticamente pela sua idade.';
+    const year = new Date().getFullYear();
+    const complete = OB.d && OB.m && OB.y; const r = complete ? ratingFor({d:+OB.d, m:+OB.m, y:+OB.y}) : null;
+    body = `<div class="ob-group"><h2>Data de nascimento</h2>
+      <div class="selects">
+        <div class="field"><label for="ob-d">Dia</label><select id="ob-d" data-action="ob-date" data-k="d"><option value="">Selecionar</option>${Array.from({length:31},(_,i)=>`<option ${+OB.d===i+1?'selected':''}>${i+1}</option>`).join('')}</select></div>
+        <div class="field"><label for="ob-m">Mês</label><select id="ob-m" data-action="ob-date" data-k="m" style="min-width:200px"><option value="">Selecionar</option>${MONTHS.map((m,i)=>`<option value="${i+1}" ${+OB.m===i+1?'selected':''}>${m}</option>`).join('')}</select></div>
+        <div class="field"><label for="ob-y">Ano</label><select id="ob-y" data-action="ob-date" data-k="y"><option value="">Selecionar</option>${Array.from({length:90},(_,i)=>year-5-i).map(y=>`<option ${+OB.y===y?'selected':''}>${y}</option>`).join('')}</select></div>
+      </div>
+      <p class="note">Usamos sua data de nascimento só para ajustar a classificação indicativa. Ela não aparece no seu perfil.</p>
+      <div class="result-box ${r?'ok':''}" aria-live="polite">${r ? `<b>Conteúdo liberado até ${r}</b><small>${r==='A18' ? 'Todo o catálogo fica disponível.' : `Títulos acima de ${r} ficam ocultos neste perfil.`}</small>` : `<b>Preencha a data para ver a classificação liberada</b><small>Ela é calculada automaticamente, sem configuração extra.</small>`}</div>
+    </div>`;
+    foot = `<button class="btn btn-ghost" data-action="ob-back">Voltar</button><button class="btn btn-primary" data-action="ob-next" ${complete?'':'disabled'}>Continuar</button>`;
+  } else {
+    title = 'Marque alguns títulos que você curte'; lead = 'Selecionamos com base nos gêneros e estúdios que você escolheu.';
+    const prefs = {genres:[...OB.genres], themes:[...OB.themes], studios:[...OB.studios]};
+    const max = OB.y ? ratingFor({d:+OB.d||1, m:+OB.m||1, y:+OB.y}) : 'A18';
+    const list = T.filter(t => RATINGS.indexOf(t.r) <= RATINGS.indexOf(max) && t.type === 'Série').sort((a,b) => score(b, prefs, []) - score(a, prefs, [])).slice(0,12);
+    body = `<div class="ob-picks">${list.map(t => `<button class="pick" data-action="ob-pick" data-id="${t.id}" aria-pressed="${OB.picks.has(t.id)}">${art(t)}<span class="tint"></span><span class="selo">${IC.check}</span><span class="t">${esc(t.t)}</span><span class="m">${meta(t)}</span></button>`).join('')}</div>`;
+    foot = `<span class="count" aria-live="polite">${OB.picks.size} selecionado${OB.picks.size===1?'':'s'}</span><button class="btn btn-ghost" data-action="ob-back">Voltar</button><button class="btn btn-primary" data-action="ob-finish">Começar a assistir</button>`;
+  }
+  app.innerHTML = `<div class="ob">
+    <a class="logo" href="#boas-vindas" aria-label="Crunchyroll">${document.querySelector('#nav .logo').innerHTML}</a>
+    <div class="steps"><div class="bars">${bars}</div><span>Etapa ${st} de 4</span></div>
+    <h1 tabindex="-1">${title}</h1><p class="lead">${lead}</p>
+    <div class="ob-body">${body}</div>
+    <div class="ob-foot">${foot}</div>
+  </div>`;
+}
+function obGo(step){ OB.step = step; withTransition(() => { renderOnboarding(); window.scrollTo(0,0); $('h1', app)?.focus({preventScroll:true}); }); }
+function finishOnboarding(){
+  S.prefs = { ...S.prefs, genres:[...OB.genres], themes:[...OB.themes], studios:[...OB.studios], sub:OB.sub, dub:OB.dub, autoSkip:OB.autoSkip, autoplay:OB.autoplay, birth:{d:+OB.d, m:+OB.m, y:+OB.y} };
+  S.prefs.max = ratingFor(S.prefs.birth); S.picks = [...OB.picks];
+  S.onboarded = true; save();
+  go('#inicio');
+  const n = OB.genres.size + OB.themes.size + OB.studios.size + OB.picks.size;
+  setTimeout(() => toast(`Pronto! Suas recomendações foram ajustadas com ${n} escolhas.`), 400);
+}
+
+/* =========================================================
+   Player
+   ========================================================= */
+const P = { id:null, s:1, e:1, t:0, playing:false, rate:1, muted:false, buffering:false, skip:null, skipTimer:null, introDone:false, outroShown:false, tick:null, lastSave:0, idle:null, subI:0, dragging:false };
+const pl = $('#player');
+function startEpisode(id, s, e, fromStart){
+  const pr = S.prog[id];
+  P.id = id; P.s = +s || pr?.s || 1; P.e = +e || pr?.e || 1;
+  P.t = (!fromStart && pr && pr.s === P.s && pr.e === P.e) ? pr.t : 0;
+  P.introDone = P.t >= INTRO[1]; P.outroShown = false; P.rate = S.prefs.speed || 1; P.skip = null;
+  go('#assistir');
+}
+function openPlayer(){
+  if (!P.id){ const c = continueList()[0]; if (!c){ go('#inicio'); return; } P.id = c.t.id; P.s = c.p.s; P.e = c.p.e; P.t = c.p.t; P.introDone = P.t >= INTRO[1]; }
+  document.body.dataset.view = 'player';
+  const t = byId[P.id];
+  pl.hidden = false; pl.style.setProperty('--h', t.h);
+  const st = $('#stage'), si = $('#stage-img'); st.classList.remove('has-img'); si.hidden = true;
+  si.onload = () => { si.hidden = false; st.classList.add('has-img'); };
+  si.dataset.fb = `${IMG_DIR}ep-${P.id}-${P.s}-${P.e}.jpg`;
+  si.onerror = () => { const fb = si.dataset.fb; si.dataset.fb = ''; if (fb) si.src = fb; else { si.hidden = true; st.classList.remove('has-img'); } };
+  si.src = `${IMG_DIR}player-${P.id}-${P.s}-${P.e}.jpg`;
+  $('#p-title').textContent = t.t;
+  $('#p-sub').textContent = t.type === 'Filme' ? `Filme · ${t.y}` : `T${P.s} E${P.e} · ${epTitle(P.id, P.s, P.e)}`;
+  $('#seg-intro').style.cssText = `left:${INTRO[0]/EP_LEN*100}%;width:${(INTRO[1]-INTRO[0])/EP_LEN*100}%`;
+  $('#seg-outro').style.cssText = `left:${OUTRO/EP_LEN*100}%;right:0`;
+  $('#speed-lbl').textContent = `${P.rate}x`;
+  $('#pc-next').hidden = !nextEp();
+  clearSkip(); closePop(); $('#buffer-slot').innerHTML = '';
+  P.buffering = true; renderBuffer(false);
+  setPlaying(false); updateUI();
+  clearTimeout(P.loadT); P.loadT = setTimeout(() => { P.buffering = false; $('#buffer-slot').innerHTML = ''; setPlaying(true); }, 900);
+  clearInterval(P.tick); P.tick = setInterval(tick, 250);
+  pl.focus?.(); wake();
+}
+function closePlayer(){
+  if (pl.hidden) return;
+  saveProgress(true);
+  clearInterval(P.tick); clearTimeout(P.loadT); clearSkip(); closePop();
+  pl.hidden = true; pl.classList.remove('hide-ui');
+  if (document.fullscreenElement) document.exitFullscreen?.();
+}
+function nextEp(){ const t = byId[P.id]; if (t.type === 'Filme') return null; const n = t.seasons[P.s-1]; if (P.e < Math.min(n, 24)) return {s:P.s, e:P.e+1}; if (P.s < t.seasons.length) return {s:P.s+1, e:1}; return null; }
+function setPlaying(v){ P.playing = v; pl.classList.toggle('is-paused', !v); const b = $('#pc-play'); b.innerHTML = v ? IC.pause : IC.play; b.setAttribute('aria-label', v ? 'Pausar' : 'Reproduzir'); if (v) wake(); }
+function tick(){
+  if (pl.hidden) return;
+  if (P.playing && !P.buffering && !P.dragging){
+    P.t = Math.min(EP_LEN, P.t + 0.25 * P.rate);
+    if (Date.now() - P.lastSave > 3000) saveProgress();
+    if (Math.floor(P.t) % 4 === 0) P.subI = Math.floor(P.t/4);
+  }
+  segments(); skipTick(); updateUI();
+  if (P.t >= EP_LEN && P.playing){ setPlaying(false); markDone(); const n = nextEp(); if (n && S.prefs.autoplay) goNext(); }
+}
+function segments(){
+  const inIntro = P.t >= INTRO[0] && P.t < INTRO[1];
+  const inOutro = P.t >= OUTRO;
+  const label = $('#seg-label');
+  if (inIntro){ label.hidden = false; label.innerHTML = `<b>${esc(byId[P.id].t)}</b><span>Abertura</span>`; }
+  else if (inOutro){ label.hidden = false; label.innerHTML = `<b>Encerramento</b><span>${esc(byId[P.id].t)}</span>`; }
+  else label.hidden = true;
+  if (inIntro && P.skip !== 'intro'){ showSkip('intro', !P.introDone && S.prefs.autoSkip); }
+  else if (!inIntro && P.skip === 'intro') clearSkip();
+  if (inOutro && P.skip !== 'outro' && nextEp() && !P.outroShown){ P.outroShown = true; showSkip('outro', S.prefs.autoplay); markDone(); }
+  else if (!inOutro && P.skip === 'outro'){ clearSkip(); P.outroShown = false; }
+}
+function showSkip(kind, auto){
+  clearSkip(); P.skip = kind;
+  const dur = kind === 'intro' ? 5 : 8;
+  const label = kind === 'intro' ? 'Pular abertura' : 'Próximo episódio';
+  $('#skip-slot').innerHTML = `<button class="skipbtn" data-action="skip-now"><span class="fill"></span><span>${label}</span>${auto ? `<small id="skip-count">${dur}s</small>` : ''}</button>`;
+  P.skipDur = dur; P.skipLeft = auto ? dur : null;
+}
+function skipTick(){
+  if (P.skipLeft == null || !P.playing || P.buffering) return;
+  P.skipLeft -= 0.25;
+  const f = $('.skipbtn .fill'); if (f) f.style.scale = `${Math.min(1, 1 - P.skipLeft / P.skipDur)} 1`;
+  const c = $('#skip-count'); if (c) c.textContent = `${Math.max(0, Math.ceil(P.skipLeft))}s`;
+  if (P.skipLeft <= 0){ P.skipLeft = null; doSkip(true); }
+}
+function clearSkip(){ P.skipLeft = null; P.skip = null; $('#skip-slot').innerHTML = ''; }
+function doSkip(auto){
+  if (P.skip === 'intro'){
+    const back = P.t; clearSkip(); P.introDone = true; P.t = INTRO[1];
+    if (auto) toast('Abertura pulada', {label:'Voltar', fn:() => { P.t = INTRO[0] + 1; P.introDone = true; }});
+  } else if (P.skip === 'outro'){ clearSkip(); goNext(); }
+}
+function goNext(){ const n = nextEp(); if (!n) return; markDone(); P.s = n.s; P.e = n.e; P.t = 0; P.introDone = false; P.outroShown = false; saveProgress(true); openPlayer(); toast(`Reproduzindo T${n.s} E${n.e}`); }
+function markDone(){ const pr = S.prog[P.id] || (S.prog[P.id] = {s:P.s, e:P.e, t:P.t, at:Date.now(), done:[]}); const k = `${P.s}-${P.e}`; if (!pr.done.includes(k)) pr.done.push(k); save(); }
+function saveProgress(final){
+  if (!P.id) return; P.lastSave = Date.now();
+  const pr = S.prog[P.id] || {done:[]};
+  let s = P.s, e = P.e, t = P.t;
+  if (final && P.t >= OUTRO){ const n = nextEp(); if (n){ s = n.s; e = n.e; t = 0; } }
+  S.prog[P.id] = { ...pr, s, e, t, at:Date.now(), done: pr.done || [] };
+  save();
+}
+function updateUI(){
+  const pct = P.t / EP_LEN * 100;
+  $('#tl-fill').style.width = pct + '%'; $('#tl-knob').style.left = pct + '%';
+  $('#tl-buf').style.width = Math.min(100, (P.t + (P.buffering ? 2 : 75)) / EP_LEN * 100) + '%';
+  $('#p-time').textContent = `${fmt(P.t)} / ${fmt(EP_LEN)}`;
+  const tl = $('#timeline'); tl.setAttribute('aria-valuenow', Math.floor(P.t)); tl.setAttribute('aria-valuetext', `${fmt(P.t)} de ${fmt(EP_LEN)}`);
+  const lines = SUBS[S.prefs.sub] || (S.prefs.sub === 'Sem legenda' ? null : SUBS['Português (Brasil)']);
+  const inSeg = (P.t >= INTRO[0] && P.t < INTRO[1]) || P.t >= OUTRO;
+  $('#subs').textContent = (lines && !inSeg && P.t > 3) ? lines[P.subI % lines.length] : '';
+  $('#pc-mute').innerHTML = P.muted ? IC.mute : IC.vol; $('#pc-mute').setAttribute('aria-label', P.muted ? 'Ativar som' : 'Silenciar');
+}
+function seek(to){ P.t = Math.max(0, Math.min(EP_LEN - 1, to)); if (P.t < INTRO[0]) P.introDone = false; if (P.t < OUTRO) P.outroShown = false; segments(); updateUI(); }
+function renderBuffer(diag){
+  const slot = $('#buffer-slot');
+  if (!diag){ slot.innerHTML = `<div class="buffer" role="status" aria-label="Carregando"><div class="spinner"></div></div>`; return; }
+  slot.innerHTML = `<div class="buffer"><div class="diag" role="alertdialog" aria-labelledby="diag-h" aria-describedby="diag-p">
+    <div class="spinner"></div>
+    <h2 id="diag-h">Sua conexão está lenta</h2>
+    <p id="diag-p">O problema parece estar na sua rede, não na Crunchyroll. Este episódio em ${S.prefs.quality === 'Auto' ? '1080p' : S.prefs.quality} precisa de mais velocidade do que a sua conexão está entregando agora.</p>
+    <div class="meter"><span><b class="low">1,8 Mbps</b>sua velocidade</span><span><b>5 Mbps</b>necessário em 1080p</span><span><b>1,5 Mbps</b>necessário em 480p</span></div>
+    <div class="acts"><button class="btn btn-ghost" data-action="buf-wait">Continuar aguardando</button><button class="btn btn-primary" data-action="buf-480">Mudar para 480p</button></div>
+  </div></div>`;
+  $('[data-action="buf-480"]', slot).focus();
+}
+function simulateSlow(){ closePop(); P.buffering = true; renderBuffer(false); clearTimeout(P.loadT); P.loadT = setTimeout(() => renderBuffer(true), 2200); }
+function closePop(){ const p = $('#p-pop'); p.hidden = true; p.innerHTML = ''; }
+function openPop(kind){
+  const p = $('#p-pop');
+  if (!p.hidden && p.dataset.kind === kind){ closePop(); return; }
+  p.dataset.kind = kind; p.hidden = false;
+  const item = (label, checked, act, val) => `<button class="menu-item" role="menuitemradio" aria-checked="${checked}" data-action="${act}" data-v="${esc(val)}">${esc(label)}${checked ? `<svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 7.5l3.5 3.5L12 3.5"/></svg>` : ''}</button>`;
+  if (kind === 'speed') p.innerHTML = `<h3>Velocidade</h3><div role="menu">${[0.5,0.75,1,1.25,1.5,2].map(r => item(`${r}x${r===1?' (normal)':''}`, P.rate===r, 'set-speed', r)).join('')}</div>`;
+  if (kind === 'subs') p.innerHTML = `<h3>Legendas</h3><div role="menu">${SUB_LANGS.map(l => item(l, S.prefs.sub===l, 'set-sub', l)).join('')}</div>`;
+  if (kind === 'settings') p.innerHTML = `<h3>Qualidade</h3><div role="menu">${['Auto','1080p','720p','480p'].map(q => item(q, S.prefs.quality===q, 'set-quality', q)).join('')}</div>
+    <hr style="border:0;border-top:1px solid var(--border);margin:6px 0"><h3>Reprodução automática</h3>
+    <button class="menu-item" role="switch" aria-checked="${S.prefs.autoSkip}" data-action="pref-switch" data-k="autoSkip">Pular abertura<span class="switch"></span></button>
+    <button class="menu-item" role="switch" aria-checked="${S.prefs.autoplay}" data-action="pref-switch" data-k="autoplay">Próximo episódio<span class="switch"></span></button>
+    <hr style="border:0;border-top:1px solid var(--border);margin:6px 0"><h3>Demonstração</h3>
+    <button class="menu-item" data-action="demo-intro">Ir para a abertura</button>
+    <button class="menu-item" data-action="demo-outro">Ir para o encerramento</button>
+    <button class="menu-item" data-action="demo-slow">Simular conexão lenta</button>`;
+  $('button', p)?.focus();
+}
+function wake(){ pl.classList.remove('hide-ui'); clearTimeout(P.idle); P.idle = setTimeout(() => { if (P.playing && $('#p-pop').hidden) pl.classList.add('hide-ui'); }, 3000); }
+pl.addEventListener('pointermove', wake);
+document.addEventListener('keydown', e => {
+  if (pl.hidden) return;
+  const tag = e.target.tagName; if (tag === 'INPUT' && e.target.type !== 'range') return;
+  wake();
+  if (e.key === ' ' || e.key === 'k'){ if (tag === 'BUTTON' && e.key === ' ') return; e.preventDefault(); setPlaying(!P.playing); }
+  else if (e.key === 'ArrowRight' || e.key === 'l'){ if (e.target.id === 'timeline' || tag !== 'INPUT'){ e.preventDefault(); seek(P.t + 10); } }
+  else if (e.key === 'ArrowLeft' || e.key === 'j'){ if (e.target.id === 'timeline' || tag !== 'INPUT'){ e.preventDefault(); seek(P.t - 10); } }
+  else if (e.key === 'f'){ toggleFs(); }
+  else if (e.key === 'm'){ P.muted = !P.muted; updateUI(); }
+  else if (e.key === 'Escape'){ if (!$('#p-pop').hidden) closePop(); else if (!document.fullscreenElement) go(`#titulo-${P.id}`); }
+});
+function toggleFs(){ if (document.fullscreenElement) document.exitFullscreen?.(); else pl.requestFullscreen?.().catch(() => toast('Tela cheia indisponível neste navegador')); }
+/* timeline drag */
+(() => {
+  const tl = $('#timeline'), tip = $('#tl-tip');
+  const at = x => { const r = tl.getBoundingClientRect(); return Math.max(0, Math.min(1, (x - r.left) / r.width)) * EP_LEN; };
+  tl.addEventListener('pointermove', e => { const r = tl.getBoundingClientRect(); const v = at(e.clientX); tip.textContent = fmt(v) + (v>=INTRO[0]&&v<INTRO[1] ? ' · Abertura' : v>=OUTRO ? ' · Encerramento' : ''); tip.style.left = (e.clientX - r.left) + 'px'; if (P.dragging) seek(v); });
+  tl.addEventListener('pointerdown', e => { P.dragging = true; tl.classList.add('dragging'); tl.setPointerCapture(e.pointerId); seek(at(e.clientX)); });
+  const end = () => { P.dragging = false; tl.classList.remove('dragging'); };
+  tl.addEventListener('pointerup', end); tl.addEventListener('pointercancel', end);
+})();
+$('#vol').addEventListener('input', e => { P.muted = +e.target.value === 0; updateUI(); });
+
+/* =========================================================
+   Conta / preferências
+   ========================================================= */
+function toggleAccount(){
+  const m = $('#account-menu'), b = $('[data-action="toggle-account"]');
+  if (!m.hidden){ closeAccount(); return; }
+  m.innerHTML = `<h3>Reprodução</h3>
+    <button class="menu-item" role="switch" aria-checked="${S.prefs.autoSkip}" data-action="pref-switch" data-k="autoSkip">Pular abertura automaticamente<span class="switch"></span></button>
+    <button class="menu-item" role="switch" aria-checked="${S.prefs.autoplay}" data-action="pref-switch" data-k="autoplay">Próximo episódio automaticamente<span class="switch"></span></button>
+    <hr>
+    <button class="menu-item" data-action="logout">Sair da conta</button>`;
+  m.hidden = false; b.setAttribute('aria-expanded', 'true'); $('button', m).focus();
+}
+function closeAccount(){ const m = $('#account-menu'); if (!m) return; m.hidden = true; $('[data-action="toggle-account"]')?.setAttribute('aria-expanded', 'false'); }
+
+/* =========================================================
+   Eventos (delegação)
+   ========================================================= */
+document.addEventListener('click', e => {
+  const el = e.target.closest('[data-action]');
+  if (!el){
+    if (!e.target.closest('#account-menu')) closeAccount();
+    if (SR.open && !e.target.closest('.fpanel')){ SR.open = null; renderFilters(); }
+    if (!e.target.closest('.search-box') && $('#ac')) { $('#ac').hidden = true; $('#q')?.setAttribute('aria-expanded','false'); }
+    if (!pl.hidden && !e.target.closest('#p-pop') && !e.target.closest('.p-bottom') && !e.target.closest('.buffer') && !e.target.closest('.skipbtn') && !e.target.closest('.p-top')) { if (!$('#p-pop').hidden) closePop(); else setPlaying(!P.playing); }
+    return;
+  }
+  const a = el.dataset.action, d = el.dataset;
+  if (a !== 'toggle-account' && !el.closest('#account-menu')) closeAccount();
+  switch (a){
+    case 'play': e.preventDefault(); startEpisode(d.id, d.s, d.e); break;
+    case 'toggle-list': {
+      e.preventDefault(); const id = d.id, has = S.list.includes(id);
+      S.list = has ? S.list.filter(x => x !== id) : [id, ...S.list]; save();
+      $$(`[data-action="toggle-list"][data-id="${id}"]`).forEach(b => { b.setAttribute('aria-pressed', !has); b.setAttribute('aria-label', has ? 'Salvar em Minha lista' : 'Remover de Minha lista'); b.innerHTML = has ? IC.bm : IC.bmFill; });
+      toast(has ? `${byId[id].t} saiu de Minha lista` : `${byId[id].t} foi salvo em Minha lista`, {label:'Desfazer', fn:() => { S.list = has ? [id, ...S.list] : S.list.filter(x => x !== id); save(); route(); }});
+      break; }
+    case 'row-scroll': { const tr = $('.row-track', el.parentElement); tr.scrollBy({left: +d.dir * tr.clientWidth * .85}); break; }
+    case 'hero-go': heroShow(+d.i); stopHero(); heroPaused = true; syncHeroPause(); break;
+    case 'hero-pause': if (heroTimer){ stopHero(); heroPaused = true; } else { heroPaused = false; startHero(); } syncHeroPause(); break;
+    case 'season': seasonSel[d.id] = +d.s; renderTitle(d.id); $(`[data-action="season"][data-s="${d.s}"]`)?.focus(); break;
+    case 'genre-search': SR.q = ''; Object.keys(SR.f).forEach(k => SR.f[k] = []); SR.f.genero = [d.g]; go('#busca'); break;
+    case 'genre-filter': SR.f.genero = [...new Set([...SR.f.genero, d.g])]; renderFilters(); renderResults(); break;
+    case 'nav-preset': {
+      Object.keys(SR.f).forEach(k => SR.f[k] = []); SR.q = ''; SR.open = null;
+      if (d.preset === 'novidades') SR.sort = 'recentes';
+      if (d.preset === 'populares') SR.sort = 'popularidade';
+      if (d.preset === 'simulcast'){ SR.sort = 'popularidade'; SR.f.status = ['Em exibição']; }
+      if (d.preset === 'categorias'){ SR.sort = 'relevancia'; SR.open = 'genero'; SR.draft = []; }
+      go('#busca'); break; }
+    case 'q-clear': SR.q = ''; $('#q').value = ''; el.hidden = true; $('#q').focus(); renderAC(false); renderResults(); break;
+    case 'recent': SR.q = d.v; $('#q').value = d.v; $('.search-clear').hidden = false; commitRecent(d.v); renderResults(); break;
+    case 'recent-clear': S.recent = []; save(); renderResults(); break;
+    case 'f-open': SR.open = SR.open === d.k ? null : d.k; SR.draft = d.k === 'sort' ? null : [...(SR.f[d.k] || [])]; renderFilters(); break;
+    case 'f-toggle': { const v = el.value; SR.draft = el.checked ? [...SR.draft, v] : SR.draft.filter(x => x !== v); break; }
+    case 'f-panel-clear': SR.draft = []; $$('.fpanel input[type="checkbox"]').forEach(c => c.checked = false); break;
+    case 'f-apply': SR.f[SR.open] = [...SR.draft]; SR.open = null; renderFilters(); renderResults(); break;
+    case 'sort-pick': SR.sort = el.value; SR.open = null; renderFilters(); renderResults(); break;
+    case 'f-remove': SR.f[d.k] = SR.f[d.k].filter(o => o !== d.o); renderFilters(); renderResults(); break;
+    case 'f-clear': Object.keys(SR.f).forEach(k => SR.f[k] = []); renderFilters(); renderResults(); break;
+    case 'toggle-account': toggleAccount(); break;
+    case 'pref-switch': { const k = d.k; S.prefs[k] = !S.prefs[k]; save(); el.setAttribute('aria-checked', S.prefs[k]); $$(`[data-action="pref-switch"][data-k="${k}"]`).forEach(b => b.setAttribute('aria-checked', S.prefs[k])); break; }
+    case 'logout': try{ localStorage.removeItem(KEY); }catch(_){} S = defaults(); Object.assign(OB, { step:1, genres:new Set(), themes:new Set(), studios:new Set(), sub:'Português (Brasil)', dub:'Áudio original (JP)', autoSkip:true, autoplay:true, d:'', m:'', y:'', picks:new Set() }); go('#boas-vindas'); break;
+    case 'ob-bubble': { const set = OB[d.k]; set.has(d.v) ? set.delete(d.v) : set.add(d.v); el.setAttribute('aria-pressed', set.has(d.v)); const n = OB.genres.size + OB.themes.size + OB.studios.size; $('.ob-foot .count').textContent = `${n} selecionado${n===1?'':'s'}${n<3?` · faltam ${3-n}`:''}`; $('[data-action="ob-next"]').disabled = n < 3; break; }
+    case 'ob-skipstep': obGo(OB.step + 1); break;
+    case 'ob-next': if (!el.disabled) obGo(OB.step + 1); break;
+    case 'ob-back': obGo(OB.step - 1); break;
+    case 'ob-switch': OB[d.k] = !OB[d.k]; el.setAttribute('aria-checked', OB[d.k]); break;
+    case 'ob-radio': OB[el.name] = el.value; break;
+    case 'ob-pick': OB.picks.has(d.id) ? OB.picks.delete(d.id) : OB.picks.add(d.id); el.setAttribute('aria-pressed', OB.picks.has(d.id)); $('.ob-foot .count').textContent = `${OB.picks.size} selecionado${OB.picks.size===1?'':'s'}`; break;
+    case 'ob-finish': finishOnboarding(); break;
+    /* player */
+    case 'player-back': go(`#titulo-${P.id}`); break;
+    case 'toggle-play': setPlaying(!P.playing); break;
+    case 'seek-rel': seek(P.t + +d.d); break;
+    case 'toggle-mute': P.muted = !P.muted; $('#vol').value = P.muted ? 0 : 80; updateUI(); break;
+    case 'next-ep': if (nextEp()) goNext(); break;
+    case 'p-pop': openPop(d.pop); break;
+    case 'set-speed': P.rate = +d.v; S.prefs.speed = P.rate; save(); $('#speed-lbl').textContent = `${P.rate}x`; closePop(); toast(`Velocidade ${P.rate}x`); break;
+    case 'set-sub': S.prefs.sub = d.v; save(); closePop(); toast(d.v === 'Sem legenda' ? 'Legendas desativadas' : `Legendas em ${d.v}`); break;
+    case 'set-quality': S.prefs.quality = d.v; save(); closePop(); toast(`Qualidade ${d.v}`); break;
+    case 'fullscreen': toggleFs(); break;
+    case 'skip-now': doSkip(false); break;
+    case 'demo-intro': closePop(); seek(INTRO[0] - 3); P.introDone = false; setPlaying(true); break;
+    case 'demo-outro': closePop(); seek(OUTRO - 3); setPlaying(true); break;
+    case 'demo-slow': simulateSlow(); break;
+    case 'buf-480': S.prefs.quality = '480p'; save(); P.buffering = false; $('#buffer-slot').innerHTML = ''; setPlaying(true); toast('Qualidade alterada para 480p'); break;
+    case 'buf-wait': $('#buffer-slot').innerHTML = ''; renderBuffer(false); clearTimeout(P.loadT); P.loadT = setTimeout(() => { P.buffering = false; $('#buffer-slot').innerHTML = ''; setPlaying(true); }, 2500); break;
+  }
+});
+document.addEventListener('change', e => {
+  const el = e.target;
+  if (el.dataset.action === 'ob-date'){ OB[el.dataset.k] = el.value; renderOnboarding(); $(`#ob-${el.dataset.k}`)?.focus(); }
+  if (el.dataset.action === 'ob-radio'){ OB[el.name] = el.value; }
+});
+$('#ac') || null;
+document.addEventListener('mousedown', e => { const li = e.target.closest('#ac [data-ac]'); if (li){ e.preventDefault(); pickAC(+li.dataset.ac); } });
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  if (SR.open){ const k = SR.open; SR.open = null; renderFilters(); $(`[data-k="${k}"]`)?.focus(); }
+  if (!$('#account-menu').hidden){ closeAccount(); $('[data-action="toggle-account"]').focus(); }
+});
+window.addEventListener('pagehide', () => { if (!pl.hidden) saveProgress(true); });
+
+route();
+</script>
+</body>
+</html>
