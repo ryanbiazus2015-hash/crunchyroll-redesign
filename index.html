@@ -996,7 +996,6 @@ function renderResults(){
     const sug = recs().slice(0,12);
     el.innerHTML = `
       ${S.recent.length ? `<section class="row"><div class="row-head"><h2>Buscas recentes</h2><button class="link" data-action="recent-clear">Limpar recentes</button></div><div class="chips">${S.recent.map(r => `<button class="chip" data-action="recent" data-v="${esc(r)}">${esc(r)}</button>`).join('')}</div></section>` : ''}
-      <section class="row"><div class="row-head"><h2>Explorar por gênero</h2></div><div class="chips">${GENRES.map(g => `<button class="chip" data-action="genre-filter" data-g="${esc(g)}">${esc(g)}</button>`).join('')}</div></section>
       <section class="row"><div class="row-head"><h2>Sugestões pra você</h2></div><div class="grid">${sug.map(t => posterCard(t, {reason: reasonFor(t)})).join('')}</div></section>`;
     return;
   }
@@ -1287,7 +1286,6 @@ document.addEventListener('click', e => {
     case 'hero-pause': if (heroTimer){ stopHero(); heroPaused = true; } else { heroPaused = false; startHero(); } syncHeroPause(); break;
     case 'season': seasonSel[d.id] = +d.s; renderTitle(d.id); $(`[data-action="season"][data-s="${d.s}"]`)?.focus(); break;
     case 'genre-search': SR.q = ''; Object.keys(SR.f).forEach(k => SR.f[k] = []); SR.f.genero = [d.g]; go('#busca'); break;
-    case 'genre-filter': SR.f.genero = [...new Set([...SR.f.genero, d.g])]; renderFilters(); renderResults(); break;
     case 'nav-preset': {
       Object.keys(SR.f).forEach(k => SR.f[k] = []); SR.q = ''; SR.open = null;
       if (d.preset === 'novidades') SR.sort = 'recentes';
