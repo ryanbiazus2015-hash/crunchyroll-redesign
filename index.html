@@ -388,9 +388,7 @@ button.chip:hover{ border-color:#5a5a60; color:var(--text); }
 .intro[hidden]{ display:none; }
 .intro.is-out{ opacity:0; pointer-events:none; }
 /* Levemente acima do centro (centro óptico): com as barras do navegador, o centro exato parece baixo */
-.intro video{ position:absolute; inset:0; width:100%; height:100%; object-fit:contain; object-position:center; translate:0 -7vh; }
-.intro-skip{ position:absolute; right:calc(24px + env(safe-area-inset-right,0px)); bottom:calc(24px + env(safe-area-inset-bottom,0px)); padding:8px 14px; border-radius:4px; background:rgba(255,255,255,.08); color:var(--text-2); font-size:13px; font-weight:500; }
-.intro-skip:hover{ background:rgba(255,255,255,.16); color:var(--text); }
+.intro video{ position:absolute; inset:0; width:100%; height:100%; object-fit:contain; object-position:center; translate:0 -5vh; }
 
 /* ---------- Toast ---------- */
 .toasts{ position:fixed; left:50%; bottom:calc(28px + env(safe-area-inset-bottom,0px)); translate:-50% 0; z-index:120; display:flex; flex-direction:column; gap:8px; align-items:center; pointer-events:none; }
@@ -487,7 +485,6 @@ button.chip:hover{ border-color:#5a5a60; color:var(--text); }
 
 <div class="intro" id="intro" hidden aria-label="Abertura da Crunchyroll">
   <video id="intro-video" playsinline preload="none"></video>
-  <button class="intro-skip" data-action="intro-skip">Pular</button>
 </div>
 
 <div class="toasts" id="toasts" role="status" aria-live="polite"></div>
@@ -1109,7 +1106,7 @@ function playIntro(done){
     setTimeout(() => { box.hidden = true; box.classList.remove('is-out'); document.documentElement.style.overflow = ''; v.pause(); v.removeAttribute('src'); v.load(); done(); }, 350);
   };
   box.hidden = false; box.classList.remove('is-out'); document.documentElement.style.overflow = 'hidden';
-  v.onended = end; v.onerror = end; box.endIntro = end;
+  v.onended = end; v.onerror = end;
   v.onloadedmetadata = () => { if (v.duration > INTRO_MAX) v.playbackRate = Math.min(4, v.duration / INTRO_MAX); };
   v.muted = false; v.src = INTRO_SRC;
   v.play().catch(() => { v.muted = true; v.play().catch(end); });
@@ -1366,9 +1363,7 @@ document.addEventListener('click', e => {
     case 'ob-switch': OB[d.k] = !OB[d.k]; el.setAttribute('aria-checked', OB[d.k]); break;
     case 'ob-radio': OB[el.name] = el.value; break;
     case 'ob-pick': OB.picks.has(d.id) ? OB.picks.delete(d.id) : OB.picks.add(d.id); el.setAttribute('aria-pressed', OB.picks.has(d.id)); $('.ob-foot .count').textContent = `${OB.picks.size} selecionado${OB.picks.size===1?'':'s'}`; break;
-    case 'ob-finish': finishOnboarding(); break;
-    case 'intro-skip': $('#intro').endIntro?.(); break;
-    /* player */
+    case 'ob-finish': finishOnboarding(); break;    /* player */
     case 'player-back': go(`#titulo-${P.id}`); break;
     case 'toggle-play': setPlaying(!P.playing); break;
     case 'seek-rel': seek(P.t + +d.d); break;
