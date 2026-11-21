@@ -58,7 +58,8 @@ body[data-view="onboarding"] .nav, body[data-view="player"] .nav{ display:none; 
 .logo{ display:flex; align-items:center; gap:6px; color:var(--orange); text-decoration:none; font-weight:800; font-size:22px; letter-spacing:-.02em; }
 .logo svg{ width:150px; height:auto; display:block; }
 .nav-links{ display:flex; gap:28px; list-style:none; margin:0; padding:0; }
-.nav-links button{ font-size:14px; color:var(--text-2); padding:6px 0; position:relative; }
+.nav-links button, .nav-links span{ font-size:14px; color:var(--text-2); padding:6px 0; position:relative; }
+.nav-links span{ display:inline-block; cursor:default; }
 .nav-links button:hover{ color:var(--text); }
 .nav-right{ margin-left:auto; display:flex; align-items:center; gap:8px; position:relative; }
 .nav-icon{ width:40px; height:40px; display:grid; place-items:center; border-radius:50%; color:var(--text); }
@@ -222,6 +223,28 @@ button.chip:hover{ border-color:#5a5a60; color:var(--text); }
 .ep h3{ margin:10px 0 2px; font-size:14px; font-weight:500; color:var(--text); }
 .ep p{ margin:0; font-size:12px; color:var(--muted); }
 .ep p.now{ color:var(--orange); font-weight:500; }
+
+/* ---------- Minhas Listas ---------- */
+.lists{ padding-top:48px; }
+.lists-title{ display:flex; align-items:center; justify-content:center; gap:12px; margin:0; color:#fff; font-size:32px; font-weight:800; letter-spacing:-.02em; }
+.lists-title svg{ width:30px; height:30px; }
+.lists-tabs{ display:flex; justify-content:center; max-width:1312px; margin:32px auto 0; border-bottom:3px solid #4a4a4e; }
+.lists-tab{ min-height:80px; padding:0 50px; margin-bottom:-3px; border-bottom:4px solid transparent; color:var(--muted); font-size:16px; font-weight:700; letter-spacing:.02em; text-transform:uppercase; }
+.lists-tab:hover{ color:var(--text); }
+.lists-tab[aria-selected="true"]{ color:#fff; background:var(--surface); border-bottom-color:var(--orange); }
+.lists-body{ max-width:1312px; margin:28px auto 0; }
+.lists-sub{ display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; }
+.lists-sub h2{ margin:0; color:#fff; font-size:24px; font-weight:700; }
+.lists-clear{ color:var(--muted); font-size:16px; font-weight:700; text-transform:uppercase; letter-spacing:.02em; }
+.lists-clear:hover{ color:var(--text); }
+.lists-empty{ display:flex; flex-direction:column; align-items:center; gap:20px; padding:52px 24px 56px; border:1px dashed #8a8a8f; text-align:center; }
+.lists-empty p{ margin:0; color:var(--text-2); font-size:18px; line-height:1.55; }
+.lists-art{ width:200px; height:auto; margin-bottom:12px; }
+.hist-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:32px 24px; }
+.hist-foot{ display:flex; align-items:center; justify-content:space-between; margin-top:10px; color:var(--muted); font-size:15px; }
+.hist-del{ width:36px; height:36px; display:grid; place-items:center; border-radius:50%; color:var(--muted); }
+.hist-del:hover{ color:var(--text); background:var(--surface-2); }
+@media (max-width: 900px){ .lists-tab{ padding:0 16px; font-size:13px; min-height:60px; } }
 
 /* ---------- Search ---------- */
 .search-top{ background:var(--surface); padding:32px var(--pad) 24px; }
@@ -438,10 +461,10 @@ button.chip:hover{ border-color:#5a5a60; color:var(--text); }
     <svg viewBox="0 0 171 32" fill="none" aria-hidden="true"><path d="M167.22 5.71429H170.592V24.9199H167.22V5.71429Z" fill="#F47521"/><path d="M159.944 5.71429H163.317V24.9199H159.944V5.71429Z" fill="#F47521"/><path d="M157.101 17.9791C157.101 22.6063 154.787 25.0871 150.523 25.0871C146.258 25.0871 143.944 22.6063 143.944 17.9791C143.944 13.3519 146.258 10.8711 150.523 10.8711C154.787 10.8711 157.101 13.3519 157.101 17.9791ZM153.895 17.9791C153.895 14.2439 152.641 13.547 150.69 13.547C148.739 13.547 147.484 14.2439 147.484 17.9791C147.484 21.7143 148.739 22.4111 150.69 22.4111C152.474 22.4111 153.895 21.7143 153.895 17.9791Z" fill="#F47521"/><path d="M142.523 10.8711V13.7143C140.739 13.7143 138.62 13.7143 138.62 14.6063V24.9199H135.247V12.6551C135.415 10.5087 142.523 10.8711 142.523 10.8711Z" fill="#F47521"/><path d="M122.258 30.4111C124.767 24.1951 124.571 24.7247 124.767 24.1951L119.777 11.0383H123.345L126.551 20.6272L129.561 11.0383H133.129L127.805 25.2544L125.854 30.4111H122.258Z" fill="#F47521"/><path d="M117.826 16.5575V24.9199H114.453V16.3624C114.453 15.108 114.091 13.8815 111.08 13.8815C110.3 13.9094 109.519 14.0209 108.767 14.2439V24.9199H105.394V5.71429H108.767V11.2334C109.659 10.8432 110.634 10.676 111.61 10.7038C115.679 10.8711 117.826 12.9895 117.826 16.5575Z" fill="#F47521"/><path d="M99.1777 22.2439C100.404 22.1882 101.603 21.9652 102.746 21.5192V24.3624C101.436 24.892 100.07 25.115 98.6481 25.0592C94.3833 25.0592 92.0697 22.5784 92.0697 17.9512C92.0697 13.324 94.3833 10.676 98.6481 10.676C100.042 10.7317 101.408 10.9547 102.746 11.4007V14.2439C101.603 13.7979 100.404 13.5749 99.1777 13.547C96.8641 13.547 95.4425 14.2439 95.4425 17.8118C95.4425 21.5192 96.8641 22.2439 99.1777 22.2439Z" fill="#F47521"/><path d="M89.9233 16.1951V24.892H86.7178V16.1951C86.7178 14.9408 86.7178 13.7143 83.8746 13.7143C82.9826 13.7143 81.1986 13.8815 81.1986 14.4111V24.892H77.993V13.3519C77.993 11.0383 80.8362 10.676 84.3763 10.676C87.9721 10.8711 89.9233 12.2927 89.9233 16.1951Z" fill="#F47521"/><path d="M74.8153 11.0383V18.676C74.8153 22.7735 73.3937 25.2544 68.5993 25.2544C63.8049 25.2544 62.5505 22.7735 62.5505 18.676V11.0383H65.7561V19.0383C65.7561 21.3519 66.6481 22.0488 68.5993 22.0488C70.5505 22.0488 71.4425 21.3519 71.4425 19.0383V11.0383H74.8153Z" fill="#F47521"/><path d="M59.9024 10.8711V13.7143C58.1185 13.7143 56 13.7143 56 14.6063V24.9199H52.6272V12.6551C52.7944 10.5087 59.9024 10.8711 59.9024 10.8711Z" fill="#F47521"/><path d="M46.0209 22.2439C47.1916 22.216 48.3345 21.9652 49.3937 21.5192V24.3624C48.0836 24.892 46.7178 25.115 45.2962 25.0592C41.0314 25.0592 38.7178 22.5784 38.7178 17.9512C38.7178 13.324 41.0314 10.676 45.2962 10.676C46.6899 10.7317 48.0558 10.9547 49.3937 11.4007V14.2439C48.3066 13.8258 47.1638 13.5749 46.0209 13.547C43.7073 13.547 42.2857 14.2439 42.2857 17.8118C42.1185 21.5192 43.7352 22.2439 46.0209 22.2439Z" fill="#F47521"/><path d="M3.93031 17.9791C3.93031 10.2021 10.23 3.93031 18.007 3.93031C25.338 3.95819 31.4146 9.58885 32 16.892V16C32 7.16376 24.8362 0 16 0C7.16376 0 0 7.19164 0 16.0279C0 24.8641 7.16376 32 16 32H17.0592C9.70035 31.4983 3.95819 25.3659 3.93031 17.9791Z" fill="#F47521"/><path d="M25.5889 18.676C22.7456 18.676 20.4599 16.3902 20.4321 13.5749C20.4321 11.4007 21.77 9.47735 23.8049 8.72474C22.216 7.8885 20.4599 7.44251 18.6481 7.47038C12.4599 7.47038 7.44251 12.4878 7.44251 18.676C7.44251 24.8641 12.4599 29.8815 18.6481 29.8815C24.8362 29.8815 29.8537 24.8641 29.8537 18.676C29.8815 17.9512 29.8258 17.2544 29.6864 16.5296C28.8223 17.9512 27.2334 18.7596 25.5889 18.676Z" fill="#F47521"/></svg>
   </a>
   <ul class="nav-links">
-    <li><button data-action="nav-preset" data-preset="novidades">Novidades</button></li>
-    <li><button data-action="nav-preset" data-preset="populares">Populares</button></li>
-    <li><button data-action="nav-preset" data-preset="simulcast">Simulcast</button></li>
-    <li><button data-action="nav-preset" data-preset="categorias">Categorias</button></li>
+    <li><span>Novidades</span></li>
+    <li><span>Populares</span></li>
+    <li><span>Simulcast</span></li>
+    <li><span>Categorias</span></li>
   </ul>
   <div class="nav-right">
     <a class="nav-icon" href="#busca" id="nav-search" aria-label="Buscar"><svg class="i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></a>
@@ -629,7 +652,7 @@ function epTile(t, s, e, o){
         <span class="ept-h-desc">${esc(info.d)}</span>
         <span class="ept-h-cta">${PLAY_O}${esc(o.cta)}</span>
       </span>
-    </button>
+    </button>${o.footer || ''}
   </article>`;
 }
 
@@ -854,13 +877,38 @@ function epCard(t, s, e, p){
 /* =========================================================
    Minha lista
    ========================================================= */
+/* Minhas Listas: abas Fila (títulos salvos), Crunchylistas e Histórico, no formato da Crunchyroll */
+let listTab = 'fila';
+const TRASH = '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/></svg>';
+const SHELF = '<svg class="lists-art" viewBox="0 0 200 240" aria-hidden="true"><rect x="12" y="4" width="176" height="12" rx="3" fill="#E8814A" stroke="#5A1A0A" stroke-width="4"/><rect x="20" y="16" width="160" height="216" rx="4" fill="#E8814A" stroke="#5A1A0A" stroke-width="4"/><rect x="34" y="32" width="132" height="84" fill="#B9401E" stroke="#5A1A0A" stroke-width="4"/><rect x="34" y="132" width="132" height="84" fill="#B9401E" stroke="#5A1A0A" stroke-width="4"/></svg>';
+function histCard({t, p}){
+  const done = !!p.done?.includes(`${p.s}-${p.e}`);
+  const rem = Math.max(1, Math.round((EP_LEN - p.t)/60));
+  const date = new Date(p.at).toLocaleDateString('pt-BR');
+  return epTile(t, p.s, p.e, {
+    label: `T${p.s} E${p.e} · ${epTitle(t.id,p.s,p.e)}`, meta: '',
+    rest: done ? 'Assistido' : `${rem}m restantes`, pct: done ? 100 : p.t/EP_LEN*100,
+    cta: done ? 'Assistir de novo' : `Continuar E${p.e}`, animeFallback: true,
+    footer: `<div class="hist-foot"><span>${date}</span><button class="hist-del" data-action="hist-remove" data-id="${t.id}" aria-label="Remover ${esc(t.t)} do histórico">${TRASH}</button></div>`,
+  });
+}
 function renderList(){
   document.body.dataset.view = 'list';
   const items = S.list.map(id => byId[id]).filter(t => t && allowed(t));
-  app.innerHTML = `<div class="page" style="padding-top:40px">
-    <h1 tabindex="-1" style="color:#fff;font-size:32px;letter-spacing:-.02em;margin:0 0 8px">Minha lista</h1>
-    <p style="color:var(--muted);margin:0 0 28px">${items.length} título${items.length===1?'':'s'} salvo${items.length===1?'':'s'}</p>
-    ${items.length ? `<div class="grid">${items.map(t => posterCard(t)).join('')}</div>` : `<div class="empty"><h2>Sua lista está vazia</h2><p>Salve títulos com o marcador para encontrá-los aqui depois.</p><a class="btn btn-primary" href="#busca">Explorar títulos</a></div>`}
+  const hist = Object.entries(S.prog).filter(([id]) => byId[id] && allowed(byId[id])).map(([id,p]) => ({t:byId[id], p})).sort((a,b) => b.p.at - a.p.at);
+  const tabs = [['fila','Fila'],['crunchylistas','Crunchylistas'],['historico','Histórico']];
+  let body = '';
+  if (listTab === 'fila') body = items.length
+    ? `<div class="lists-sub"><h2>Mais Recentes</h2></div><div class="grid">${items.map(t => posterCard(t)).join('')}</div>`
+    : `<div class="lists-empty">${SHELF}<p>Sua fila está vazia.<br>Salve títulos com o marcador para encontrá-los aqui.</p><a class="btn btn-primary" href="#busca">Explorar títulos</a></div>`;
+  if (listTab === 'crunchylistas') body = `<div class="lists-empty">${SHELF}<p>Você ainda não tem nenhuma Crunchylista.<br>Vamos criar uma!</p><button class="btn btn-primary" data-action="new-crunchylist">Criar nova lista</button></div>`;
+  if (listTab === 'historico') body = hist.length
+    ? `<div class="lists-sub"><h2>Mais Recentes</h2><button class="lists-clear" data-action="hist-clear">Limpar histórico</button></div><div class="hist-grid">${hist.map(histCard).join('')}</div>`
+    : `<div class="lists-empty">${SHELF}<p>Seu histórico está vazio.<br>Os episódios que você assistir aparecem aqui.</p><a class="btn btn-primary" href="#inicio">Começar a assistir</a></div>`;
+  app.innerHTML = `<div class="page lists">
+    <h1 tabindex="-1" class="lists-title">${IC.bm}Minhas Listas</h1>
+    <div class="lists-tabs" role="tablist">${tabs.map(([k,l]) => `<button class="lists-tab" role="tab" aria-selected="${listTab===k}" data-action="list-tab" data-tab="${k}">${l}</button>`).join('')}</div>
+    <div class="lists-body">${body}</div>
   </div>`;
 }
 
@@ -1302,12 +1350,21 @@ $('#vol').addEventListener('input', e => { P.muted = +e.target.value === 0; upda
 function toggleAccount(){
   const m = $('#account-menu'), b = $('[data-action="toggle-account"]');
   if (!m.hidden){ closeAccount(); return; }
-  m.innerHTML = `<h3>Reprodução</h3>
+  renderAccount('main');
+  m.hidden = false; b.setAttribute('aria-expanded', 'true'); $('button', m).focus();
+}
+/* Menu da conta: tela inicial com "Preferências" e "Sair da conta"; as opções de reprodução ficam dentro de Preferências */
+function renderAccount(view){
+  const m = $('#account-menu');
+  m.innerHTML = view === 'prefs'
+    ? `<button class="menu-item menu-back" data-action="account-view" data-v="main"><span style="display:flex;align-items:center;gap:8px">${IC.left}Preferências</span></button>
+    <hr>
+    <h3>Reprodução</h3>
     <button class="menu-item" role="switch" aria-checked="${S.prefs.autoSkip}" data-action="pref-switch" data-k="autoSkip">Pular abertura automaticamente<span class="switch"></span></button>
-    <button class="menu-item" role="switch" aria-checked="${S.prefs.autoplay}" data-action="pref-switch" data-k="autoplay">Próximo episódio automaticamente<span class="switch"></span></button>
+    <button class="menu-item" role="switch" aria-checked="${S.prefs.autoplay}" data-action="pref-switch" data-k="autoplay">Próximo episódio automaticamente<span class="switch"></span></button>`
+    : `<button class="menu-item" data-action="account-view" data-v="prefs">Preferências${IC.right}</button>
     <hr>
     <button class="menu-item" data-action="logout">Sair da conta</button>`;
-  m.hidden = false; b.setAttribute('aria-expanded', 'true'); $('button', m).focus();
 }
 function closeAccount(){ const m = $('#account-menu'); if (!m) return; m.hidden = true; $('[data-action="toggle-account"]')?.setAttribute('aria-expanded', 'false'); }
 
@@ -1328,6 +1385,10 @@ document.addEventListener('click', e => {
   switch (a){
     case 'play': e.preventDefault(); startEpisode(d.id, d.s, d.e); break;
     case 'anime-title': e.preventDefault(); go(`#titulo-${d.id}`); break;
+    case 'list-tab': listTab = d.tab; renderList(); $(`[data-tab="${d.tab}"]`)?.focus(); break;
+    case 'new-crunchylist': toast('Criar Crunchylistas não está disponível neste protótipo'); break;
+    case 'hist-remove': { const id = d.id, old = S.prog[id]; delete S.prog[id]; save(); renderList(); toast(`${byId[id].t} saiu do histórico`, {label:'Desfazer', fn:() => { S.prog[id] = old; save(); route(); }}); break; }
+    case 'hist-clear': { const old = S.prog; S.prog = {}; save(); renderList(); toast('Histórico limpo', {label:'Desfazer', fn:() => { S.prog = old; save(); route(); }}); break; }
     case 'toggle-list': {
       e.preventDefault(); const id = d.id, has = S.list.includes(id);
       S.list = has ? S.list.filter(x => x !== id) : [id, ...S.list]; save();
@@ -1357,6 +1418,7 @@ document.addEventListener('click', e => {
     case 'f-remove': SR.f[d.k] = SR.f[d.k].filter(o => o !== d.o); renderFilters(); renderResults(); break;
     case 'f-clear': Object.keys(SR.f).forEach(k => SR.f[k] = []); renderFilters(); renderResults(); break;
     case 'toggle-account': toggleAccount(); break;
+    case 'account-view': renderAccount(d.v); $('#account-menu button')?.focus(); break;
     case 'pref-switch': { const k = d.k; S.prefs[k] = !S.prefs[k]; save(); el.setAttribute('aria-checked', S.prefs[k]); $$(`[data-action="pref-switch"][data-k="${k}"]`).forEach(b => b.setAttribute('aria-checked', S.prefs[k])); applyPlaybackPref(k); break; }
     case 'logout': try{ localStorage.removeItem(KEY); }catch(_){} S = defaults(); Object.assign(OB, { step:1, genres:new Set(), themes:new Set(), studios:new Set(), sub:'Português (Brasil)', dub:'Áudio original (JP)', autoSkip:false, autoplay:false, d:'', m:'', y:'', picks:new Set() }); go('#boas-vindas'); break;
     case 'ob-bubble': { const set = OB[d.k]; set.has(d.v) ? set.delete(d.v) : set.add(d.v); el.setAttribute('aria-pressed', set.has(d.v)); const n = OB.genres.size + OB.themes.size + OB.studios.size; $('.ob-foot .count').textContent = `${n} selecionado${n===1?'':'s'}`; break; }
